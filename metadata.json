@@ -1,0 +1,6 @@
+{
+  "name": "Campus Companion",
+  "description": "Apple-inspired frontend student portal with modern glassmorphism, landing page, authentication, registration, interactive dashboard, dark mode, and smooth animations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
