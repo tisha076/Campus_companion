@@ -1,439 +1,677 @@
 import React, { useState } from 'react';
-import { PageView, PasswordStrength } from '../types';
-import { RippleButton } from './RippleButton';
+import { PageView, UserProfile } from '../types';
+import { createRipple } from '../utils/ripple';
 
 interface RegisterPageProps {
-  setActiveView: (view: PageView) => void;
-  onRegisterSuccess: (name: string, email: string) => void;
-  showToast: (msg: string, type?: 'success' | 'info' | 'warning') => void;
+  onRegisterSuccess: (user: UserProfile) => void;
+  onNavigate: (view: PageView) => void;
 }
 
-export const RegisterPage: React.FC<RegisterPageProps> = ({
-  setActiveView,
-  onRegisterSuccess,
-  showToast,
-}) => {
-  // Form State
+export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess, onNavigate }) => {
+  const [currentStep, setCurrentStep] = useState<number>(1);
+
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    studentId: '',
+    fullName: '',
     email: '',
-    department: 'School of Computing & Data Science',
-    major: 'B.Sc. Software Engineering',
-    yearLevel: 'Senior (Year 4)',
+    department: 'Computer Science & Software Engineering',
+    year: 'Freshman (Year 1)',
+    semester: 'Fall 2026',
+    studentId: '',
     password: '',
     confirmPassword: '',
-    agreeTerms: false,
+    termsAccepted: false
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [assignedStudentId, setAssignedStudentId] = useState('');
+  const [registeredUser, setRegisteredUser] = useState<UserProfile | null>(null);
 
-  // Password Strength Calculator
-  const getPasswordStrength = (pass: string): PasswordStrength => {
-    if (!pass) {
-      return { score: 0, label: 'Very Weak', color: 'bg-slate-300 dark:bg-slate-700', percent: 0 };
-    }
+  // Email format regex
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  // Student ID regex (allows alphanumeric formats like STU-2026-1029 or 8+ digit numbers)
+  const validateStudentId = (id: string) => {
+    return id.trim().length >= 4;
+  };
+
+  // Password Security Calculations
+  const getPasswordMetrics = (pass: string) => {
+    const hasMinLength = pass.length >= 8;
+    const hasUppercase = /[A-Z]/.test(pass);
+    const hasLowercase = /[a-z]/.test(pass);
+    const hasNumber = /[0-9]/.test(pass);
+    const hasSpecial = /[^A-Za-z0-9]/.test(pass);
+
     let score = 0;
-    if (pass.length >= 8) score += 1;
-    if (/[A-Z]/.test(pass)) score += 1;
-    if (/[0-9]/.test(pass)) score += 1;
-    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+    if (hasMinLength) score += 20;
+    if (hasUppercase) score += 20;
+    if (hasLowercase) score += 20;
+    if (hasNumber) score += 20;
+    if (hasSpecial) score += 20;
 
-    switch (score) {
-      case 1:
-        return { score: 1, label: 'Weak', color: 'bg-rose-500', percent: 25 };
-      case 2:
-        return { score: 2, label: 'Fair', color: 'bg-amber-500', percent: 50 };
-      case 3:
-        return { score: 3, label: 'Strong', color: 'bg-blue-500', percent: 75 };
-      case 4:
-        return { score: 4, label: 'Extremely Secure', color: 'bg-emerald-500', percent: 100 };
-      default:
-        return { score: 0, label: 'Very Weak', color: 'bg-rose-400', percent: 15 };
+    let label = 'Weak';
+    let color = '#ef4444'; // Red
+    if (score >= 80) {
+      label = 'Strong & Secure';
+      color = '#10b981'; // Green
+    } else if (score >= 60) {
+      label = 'Good';
+      color = '#3b82f6'; // Blue
+    } else if (score >= 40) {
+      label = 'Fair';
+      color = '#f59e0b'; // Amber
+    }
+
+    return {
+      hasMinLength,
+      hasUppercase,
+      hasLowercase,
+      hasNumber,
+      hasSpecial,
+      score,
+      label,
+      color,
+    };
+  };
+
+  const passMetrics = getPasswordMetrics(formData.password);
+
+  // Validate Step 1
+  const validateStep1 = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Full Name is required.';
+    } else if (formData.fullName.trim().split(' ').length < 2) {
+      newErrors.fullName = 'Please enter both first and last name.';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'University email address is required.';
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = 'Please enter a valid university email address (e.g. name@university.edu).';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Validate Step 2
+  const validateStep2 = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.department) {
+      newErrors.department = 'Please select your department / major.';
+    }
+
+    if (!formData.year) {
+      newErrors.year = 'Please select your academic year.';
+    }
+
+    if (!formData.semester) {
+      newErrors.semester = 'Please select your current semester.';
+    }
+
+    if (!formData.studentId.trim()) {
+      newErrors.studentId = 'Student ID is required.';
+    } else if (!validateStudentId(formData.studentId)) {
+      newErrors.studentId = 'Please enter a valid Student ID format (e.g. STU-2026-1029).';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Validate Step 3
+  const validateStep3 = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.password) {
+      newErrors.password = 'Password is required.';
+    } else {
+      if (formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters.';
+      } else if (!passMetrics.hasUppercase || !passMetrics.hasLowercase || !passMetrics.hasNumber || !passMetrics.hasSpecial) {
+        newErrors.password = 'Password must meet all security requirements listed below.';
+      }
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password.';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match.';
+    }
+
+    if (!formData.termsAccepted) {
+      newErrors.terms = 'You must accept the student terms & conditions to proceed.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle Step Advancement
+  const handleNextStep = (e: React.MouseEvent<HTMLButtonElement>) => {
+    createRipple(e);
+    if (currentStep === 1) {
+      if (validateStep1()) {
+        setCurrentStep(2);
+      }
+    } else if (currentStep === 2) {
+      if (validateStep2()) {
+        setCurrentStep(3);
+      }
     }
   };
 
-  const strength = getPasswordStrength(formData.password);
-
-  // Field validation checks
-  const isFirstNameValid = formData.firstName.trim().length >= 2;
-  const isLastNameValid = formData.lastName.trim().length >= 2;
-  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
-  const isStudentIdValid = /^\d{4}-\d{4}$/.test(formData.studentId) || formData.studentId.length >= 6;
-  const isPasswordValid = strength.score >= 2;
-  const isConfirmMatch = formData.confirmPassword === formData.password && formData.confirmPassword.length > 0;
-  const isFormValid =
-    isFirstNameValid &&
-    isLastNameValid &&
-    isEmailValid &&
-    isStudentIdValid &&
-    isPasswordValid &&
-    isConfirmMatch &&
-    formData.agreeTerms;
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
-    setFormData((prev) => ({ ...prev, [name]: val }));
+  // Handle Step Backwards
+  const handlePrevStep = (e: React.MouseEvent<HTMLButtonElement>) => {
+    createRipple(e);
+    setErrors({});
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
   };
 
-  const handleBlur = (field: string) => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-  };
-
+  // Handle Registration Final Submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) {
-      showToast('Please correct form errors before submitting.', 'warning');
-      return;
-    }
 
-    const tempId = `2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    setAssignedStudentId(tempId);
+    if (currentStep !== 3) return;
+
+    if (!validateStep3()) return;
+
+    const newUser: UserProfile = {
+      name: formData.fullName.trim(),
+      email: formData.email.trim(),
+      studentId: formData.studentId.trim(),
+      major: formData.department,
+      year: `${formData.year} (${formData.semester})`,
+      gpa: 4.00,
+      avatarUrl: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80`,
+      creditsEarned: 0
+    };
+
+    setRegisteredUser(newUser);
     setShowSuccessModal(true);
-    showToast('Account creation verified successfully!', 'success');
   };
 
-  const handleProceedToPortal = () => {
-    onRegisterSuccess(`${formData.firstName} ${formData.lastName}`, formData.email);
-    setShowSuccessModal(false);
-    setActiveView('portal');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  // Progress Bar Percentage
+  const progressPercent = currentStep === 1 ? 33.3 : currentStep === 2 ? 66.6 : 100;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      {/* Container Glass Panel */}
-      <div className="glass-panel p-8 sm:p-12 border border-white/80 dark:border-white/10 shadow-2xl relative overflow-hidden">
+    <div className="container max-w-7xl py-5 position-relative d-flex align-items-center justify-content-center" style={{ minHeight: '85vh' }}>
+      <div className="w-100 max-w-2xl mx-auto">
         
-        {/* Decorative Top Mesh Line */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500" />
-
-        {/* Page Title & Subtitle */}
-        <div className="text-center max-w-2xl mx-auto space-y-2 mb-10">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-500 mx-auto flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/20 mb-3">
-            <i className="bi bi-person-plus-fill" />
+        {/* Navigation Breadcrumb */}
+        <div className="mb-3 text-center text-sm-start d-flex justify-content-between align-items-center">
+          <button
+            onClick={() => onNavigate('landing')}
+            className="btn btn-link text-body text-decoration-none p-0 d-inline-flex align-items-center gap-1.5 small fw-semibold"
+          >
+            <i className="bi bi-arrow-left text-primary fs-5"></i>
+            <span>Back to Home</span>
+          </button>
+          
+          <div className="xsmall text-muted fw-bold">
+            Step {currentStep} of 3
           </div>
-          <h2 className="text-3xl font-bold font-heading text-slate-900 dark:text-white tracking-tight">
-            Student Portal Registration
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 font-light">
-            Create your unified Campus Companion profile. Fast, secure, and instant authentication.
-          </p>
         </div>
 
-        {/* Form Body - Multi Column Grid */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Glass Card Registration Wizard Container */}
+        <div className="glass-card p-4 p-sm-5 rounded-4 shadow-lg border position-relative overflow-hidden">
           
-          {/* SECTION 1: PERSONAL & ACADEMIC DETAILS */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-4 flex items-center gap-2">
-              <i className="bi bi-person-vcard text-base" />
-              1. Personal & Academic Information
-            </h3>
+          {/* Header Bar */}
+          <div className="text-center mb-4">
+            <div className="d-inline-flex align-items-center justify-content-center rounded-4 bg-gradient-accent text-white p-3 mb-3 shadow-sm floating-element" style={{ width: '56px', height: '56px' }}>
+              <i className="bi bi-person-badge-fill fs-3"></i>
+            </div>
+            <h2 className="fw-extrabold text-body tracking-tight mb-1 fs-3">Student Registration Wizard</h2>
+            <p className="text-secondary small mb-0">Join Campus Companion in 3 quick, structured steps</p>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Step Progress Indicators & Bar */}
+          <div className="mb-4">
+            {/* Top Progress Track */}
+            <div className="progress rounded-pill bg-body-tertiary mb-3 border border-subtle" style={{ height: '8px' }}>
+              <div 
+                className="progress-bar bg-gradient-accent rounded-pill transition-all"
+                style={{ width: `${progressPercent}%`, transition: 'width 0.4s ease-in-out' }}
+              ></div>
+            </div>
+
+            {/* Numbered Step Circles */}
+            <div className="d-flex align-items-center justify-content-between px-2 position-relative">
               
-              {/* First Name */}
-              <div className="floating-label-group mb-0">
-                <input
-                  type="text"
-                  name="firstName"
-                  id="firstName"
-                  placeholder=" "
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('firstName')}
-                  className={`glass-input floating-input ${
-                    touched.firstName && !isFirstNameValid ? 'border-rose-500 focus:border-rose-500' : ''
-                  }`}
-                  required
-                />
-                <label htmlFor="firstName" className="floating-label">First Name</label>
-                {touched.firstName && !isFirstNameValid && (
-                  <p className="text-[10px] text-rose-500 font-medium mt-1">First name requires at least 2 characters.</p>
-                )}
+              {/* Step 1 Indicator */}
+              <div className="d-flex flex-column align-items-center text-center z-1">
+                <div className={`rounded-circle d-flex align-items-center justify-content-center fw-bold transition-all ${
+                  currentStep > 1 
+                    ? 'bg-success text-white shadow-sm' 
+                    : currentStep === 1 
+                    ? 'bg-gradient-accent text-white shadow-md scale-110' 
+                    : 'bg-body-tertiary text-muted border border-subtle'
+                }`} style={{ width: '38px', height: '38px', fontSize: '0.9rem' }}>
+                  {currentStep > 1 ? <i className="bi bi-check-lg fs-5"></i> : '1'}
+                </div>
+                <span className={`xsmall mt-1.5 fw-bold ${currentStep === 1 ? 'text-primary' : currentStep > 1 ? 'text-success' : 'text-muted'}`}>
+                  Basic Info
+                </span>
               </div>
 
-              {/* Last Name */}
-              <div className="floating-label-group mb-0">
-                <input
-                  type="text"
-                  name="lastName"
-                  id="lastName"
-                  placeholder=" "
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('lastName')}
-                  className={`glass-input floating-input ${
-                    touched.lastName && !isLastNameValid ? 'border-rose-500 focus:border-rose-500' : ''
-                  }`}
-                  required
-                />
-                <label htmlFor="lastName" className="floating-label">Last Name</label>
-                {touched.lastName && !isLastNameValid && (
-                  <p className="text-[10px] text-rose-500 font-medium mt-1">Last name requires at least 2 characters.</p>
-                )}
+              {/* Step 2 Indicator */}
+              <div className="d-flex flex-column align-items-center text-center z-1">
+                <div className={`rounded-circle d-flex align-items-center justify-content-center fw-bold transition-all ${
+                  currentStep > 2 
+                    ? 'bg-success text-white shadow-sm' 
+                    : currentStep === 2 
+                    ? 'bg-gradient-accent text-white shadow-md scale-110' 
+                    : 'bg-body-tertiary text-muted border border-subtle'
+                }`} style={{ width: '38px', height: '38px', fontSize: '0.9rem' }}>
+                  {currentStep > 2 ? <i className="bi bi-check-lg fs-5"></i> : '2'}
+                </div>
+                <span className={`xsmall mt-1.5 fw-bold ${currentStep === 2 ? 'text-primary' : currentStep > 2 ? 'text-success' : 'text-muted'}`}>
+                  Academic Info
+                </span>
               </div>
 
-              {/* Student ID */}
-              <div className="floating-label-group mb-0">
-                <input
-                  type="text"
-                  name="studentId"
-                  id="studentId"
-                  placeholder=" "
-                  value={formData.studentId}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('studentId')}
-                  className="glass-input floating-input"
-                  required
-                />
-                <label htmlFor="studentId" className="floating-label">Student ID (e.g. 2026-8849)</label>
-              </div>
-
-              {/* University Email */}
-              <div className="floating-label-group mb-0">
-                <input
-                  type="email"
-                  name="email"
-                  id="regEmail"
-                  placeholder=" "
-                  value={formData.email}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('email')}
-                  className={`glass-input floating-input ${
-                    touched.email && !isEmailValid ? 'border-rose-500 focus:border-rose-500' : ''
-                  }`}
-                  required
-                />
-                <label htmlFor="regEmail" className="floating-label">University Email</label>
-                {touched.email && !isEmailValid && (
-                  <p className="text-[10px] text-rose-500 font-medium mt-1">Enter a valid email address.</p>
-                )}
-              </div>
-
-              {/* Academic Faculty / Department */}
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Academic Department</label>
-                <select
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  className="w-full py-2.5 px-3 rounded-xl glass-input text-xs font-medium"
-                >
-                  <option value="School of Computing & Data Science">School of Computing & Data Science</option>
-                  <option value="Faculty of Engineering & Robotics">Faculty of Engineering & Robotics</option>
-                  <option value="Business School & Economics">Business School & Economics</option>
-                  <option value="College of Biological & Health Sciences">College of Biological & Health Sciences</option>
-                  <option value="School of Architecture & Design">School of Architecture & Design</option>
-                </select>
-              </div>
-
-              {/* Year Level */}
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Academic Standing</label>
-                <select
-                  name="yearLevel"
-                  value={formData.yearLevel}
-                  onChange={handleChange}
-                  className="w-full py-2.5 px-3 rounded-xl glass-input text-xs font-medium"
-                >
-                  <option value="Freshman (Year 1)">Freshman (Year 1)</option>
-                  <option value="Sophomore (Year 2)">Sophomore (Year 2)</option>
-                  <option value="Junior (Year 3)">Junior (Year 3)</option>
-                  <option value="Senior (Year 4)">Senior (Year 4)</option>
-                  <option value="Postgraduate / Master">Postgraduate / Master</option>
-                </select>
+              {/* Step 3 Indicator */}
+              <div className="d-flex flex-column align-items-center text-center z-1">
+                <div className={`rounded-circle d-flex align-items-center justify-content-center fw-bold transition-all ${
+                  currentStep === 3 
+                    ? 'bg-gradient-accent text-white shadow-md scale-110' 
+                    : 'bg-body-tertiary text-muted border border-subtle'
+                }`} style={{ width: '38px', height: '38px', fontSize: '0.9rem' }}>
+                  3
+                </div>
+                <span className={`xsmall mt-1.5 fw-bold ${currentStep === 3 ? 'text-primary' : 'text-muted'}`}>
+                  Security
+                </span>
               </div>
 
             </div>
           </div>
 
-          {/* SECTION 2: SECURITY & PASSWORDS */}
-          <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-4 flex items-center gap-2">
-              <i className="bi bi-shield-lock text-base" />
-              2. Account Security & Password
-            </h3>
+          <form onSubmit={handleSubmit}>
+            
+            {/* STEP 1: Basic Credentials */}
+            {currentStep === 1 && (
+              <div className="animate-fade-in" key="step-1">
+                <div className="p-3 mb-4 rounded-3 bg-primary-subtle border border-primary-subtle text-body d-flex align-items-center gap-2">
+                  <i className="bi bi-info-circle-fill text-primary fs-5"></i>
+                  <span className="xsmall fw-medium">Step 1: Enter your official full name and active university email address.</span>
+                </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              
-              {/* Password */}
-              <div className="space-y-1">
-                <div className="floating-label-group mb-1">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    id="regPassword"
-                    placeholder=" "
-                    value={formData.password}
-                    onChange={handleChange}
-                    onBlur={() => handleBlur('password')}
-                    className="glass-input floating-input pr-10"
-                    required
-                  />
-                  <label htmlFor="regPassword" className="floating-label">Password</label>
+                {/* Full Name Input */}
+                <div className="mb-3">
+                  <div className="form-floating">
+                    <input
+                      type="text"
+                      className={`form-control ${errors.fullName ? 'is-invalid' : ''}`}
+                      id="fullName"
+                      placeholder="e.g. Alex Johnson"
+                      value={formData.fullName}
+                      onChange={(e) => {
+                        setFormData({ ...formData, fullName: e.target.value });
+                        if (errors.fullName) setErrors({ ...errors, fullName: '' });
+                      }}
+                    />
+                    <label htmlFor="fullName">Full Name (First & Last Name)</label>
+                    {errors.fullName && <div className="invalid-feedback xsmall">{errors.fullName}</div>}
+                  </div>
+                </div>
+
+                {/* Email Input */}
+                <div className="mb-4">
+                  <div className="form-floating">
+                    <input
+                      type="email"
+                      className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                      id="universityEmail"
+                      placeholder="alex.johnson@university.edu"
+                      value={formData.email}
+                      onChange={(e) => {
+                        setFormData({ ...formData, email: e.target.value });
+                        if (errors.email) setErrors({ ...errors, email: '' });
+                      }}
+                    />
+                    <label htmlFor="universityEmail">University Email Address</label>
+                    {errors.email && <div className="invalid-feedback xsmall">{errors.email}</div>}
+                  </div>
+                  <div className="form-text xsmall text-muted mt-1">
+                    Must be your assigned campus email ending in .edu or university domain.
+                  </div>
+                </div>
+
+                {/* Next Button */}
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="btn btn-primary btn-lg rounded-pill w-100 fw-bold bg-gradient-accent border-0 py-3 btn-ripple shadow-md d-flex align-items-center justify-content-center gap-2"
+                >
+                  <span>Continue to Academic Info</span>
+                  <i className="bi bi-arrow-right-circle-fill fs-5"></i>
+                </button>
+              </div>
+            )}
+
+            {/* STEP 2: Academic Information */}
+            {currentStep === 2 && (
+              <div className="animate-fade-in" key="step-2">
+                <div className="p-3 mb-4 rounded-3 bg-primary-subtle border border-primary-subtle text-body d-flex align-items-center gap-2">
+                  <i className="bi bi-mortarboard-fill text-primary fs-5"></i>
+                  <span className="xsmall fw-medium">Step 2: Select your academic department, current standing, and student ID.</span>
+                </div>
+
+                {/* Department / Major Dropdown */}
+                <div className="mb-3">
+                  <div className="form-floating">
+                    <select
+                      className={`form-select ${errors.department ? 'is-invalid' : ''}`}
+                      id="departmentSelect"
+                      value={formData.department}
+                      onChange={(e) => {
+                        setFormData({ ...formData, department: e.target.value });
+                        if (errors.department) setErrors({ ...errors, department: '' });
+                      }}
+                    >
+                      <option value="Computer Science & Software Engineering">Computer Science & Software Engineering</option>
+                      <option value="Artificial Intelligence & Data Science">Artificial Intelligence & Data Science</option>
+                      <option value="Electrical & Electronics Engineering">Electrical & Electronics Engineering</option>
+                      <option value="Business Administration & Finance">Business Administration & Finance</option>
+                      <option value="Biomedical Sciences & Biotechnology">Biomedical Sciences & Biotechnology</option>
+                      <option value="Mechanical & Aerospace Engineering">Mechanical & Aerospace Engineering</option>
+                    </select>
+                    <label htmlFor="departmentSelect">Department / Major</label>
+                    {errors.department && <div className="invalid-feedback xsmall">{errors.department}</div>}
+                  </div>
+                </div>
+
+                {/* Year & Semester Grid */}
+                <div className="row g-3 mb-3">
+                  <div className="col-sm-6">
+                    <div className="form-floating">
+                      <select
+                        className={`form-select ${errors.year ? 'is-invalid' : ''}`}
+                        id="yearSelect"
+                        value={formData.year}
+                        onChange={(e) => {
+                          setFormData({ ...formData, year: e.target.value });
+                          if (errors.year) setErrors({ ...errors, year: '' });
+                        }}
+                      >
+                        <option value="Freshman (Year 1)">Freshman (Year 1)</option>
+                        <option value="Sophomore (Year 2)">Sophomore (Year 2)</option>
+                        <option value="Junior (Year 3)">Junior (Year 3)</option>
+                        <option value="Senior (Year 4)">Senior (Year 4)</option>
+                        <option value="Graduate / Master's">Graduate / Master's</option>
+                      </select>
+                      <label htmlFor="yearSelect">Academic Standing</label>
+                      {errors.year && <div className="invalid-feedback xsmall">{errors.year}</div>}
+                    </div>
+                  </div>
+
+                  <div className="col-sm-6">
+                    <div className="form-floating">
+                      <select
+                        className={`form-select ${errors.semester ? 'is-invalid' : ''}`}
+                        id="semesterSelect"
+                        value={formData.semester}
+                        onChange={(e) => {
+                          setFormData({ ...formData, semester: e.target.value });
+                          if (errors.semester) setErrors({ ...errors, semester: '' });
+                        }}
+                      >
+                        <option value="Fall 2026">Fall 2026</option>
+                        <option value="Spring 2026">Spring 2026</option>
+                        <option value="Summer 2026">Summer 2026</option>
+                        <option value="Fall 2025">Fall 2025</option>
+                      </select>
+                      <label htmlFor="semesterSelect">Current Semester</label>
+                      {errors.semester && <div className="invalid-feedback xsmall">{errors.semester}</div>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Student ID */}
+                <div className="mb-4">
+                  <div className="form-floating">
+                    <input
+                      type="text"
+                      className={`form-control ${errors.studentId ? 'is-invalid' : ''}`}
+                      id="studentId"
+                      placeholder="STU-2026-1029"
+                      value={formData.studentId}
+                      onChange={(e) => {
+                        setFormData({ ...formData, studentId: e.target.value });
+                        if (errors.studentId) setErrors({ ...errors, studentId: '' });
+                      }}
+                    />
+                    <label htmlFor="studentId">Student ID Number</label>
+                    {errors.studentId && <div className="invalid-feedback xsmall">{errors.studentId}</div>}
+                  </div>
+                  <div className="form-text xsmall text-muted mt-1">
+                    Provided on your student ID badge (e.g. STU-2026-1029)
+                  </div>
+                </div>
+
+                {/* Button Action Bar */}
+                <div className="d-flex align-items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handlePrevStep}
+                    className="btn btn-outline-secondary btn-lg rounded-pill px-4 fw-bold py-3"
+                  >
+                    <i className="bi bi-arrow-left me-1"></i>
+                    <span>Previous</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="btn btn-primary btn-lg rounded-pill flex-grow-1 fw-bold bg-gradient-accent border-0 py-3 btn-ripple shadow-md d-flex align-items-center justify-content-center gap-2"
+                  >
+                    <span>Continue to Security</span>
+                    <i className="bi bi-arrow-right-circle-fill fs-5"></i>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: Password & Security */}
+            {currentStep === 3 && (
+              <div className="animate-fade-in" key="step-3">
+                <div className="p-3 mb-4 rounded-3 bg-primary-subtle border border-primary-subtle text-body d-flex align-items-center gap-2">
+                  <i className="bi bi-shield-lock-fill text-primary fs-5"></i>
+                  <span className="xsmall fw-medium">Step 3: Create a secure password and accept portal terms to finalize.</span>
+                </div>
+
+                {/* Password Input with Show/Hide Toggle */}
+                <div className="mb-3 position-relative">
+                  <div className="form-floating">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className={`form-control pe-5 ${errors.password ? 'is-invalid' : ''}`}
+                      id="wizardPassword"
+                      placeholder="Create Password"
+                      value={formData.password}
+                      onChange={(e) => {
+                        setFormData({ ...formData, password: e.target.value });
+                        if (errors.password) setErrors({ ...errors, password: '' });
+                      }}
+                    />
+                    <label htmlFor="wizardPassword">Create Password</label>
+                    {errors.password && <div className="invalid-feedback xsmall">{errors.password}</div>}
+                  </div>
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'Hide Password' : 'Show Password'}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+                    className="btn btn-link text-secondary position-absolute top-50 end-0 translate-middle-y me-3 text-decoration-none z-3"
+                    style={{ marginTop: errors.password ? '-10px' : '0' }}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
-                    <i className={`bi ${showPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'}`} />
+                    <i className={`bi ${showPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'} fs-5`}></i>
                   </button>
                 </div>
 
-                {/* Password Strength Meter */}
+                {/* Confirm Password Input with Show/Hide Toggle */}
+                <div className="mb-3 position-relative">
+                  <div className="form-floating">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      className={`form-control pe-5 ${errors.confirmPassword ? 'is-invalid' : ''}`}
+                      id="wizardConfirmPassword"
+                      placeholder="Confirm Password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => {
+                        setFormData({ ...formData, confirmPassword: e.target.value });
+                        if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: '' });
+                      }}
+                    />
+                    <label htmlFor="wizardConfirmPassword">Confirm Password</label>
+                    {errors.confirmPassword && <div className="invalid-feedback xsmall">{errors.confirmPassword}</div>}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="btn btn-link text-secondary position-absolute top-50 end-0 translate-middle-y me-3 text-decoration-none z-3"
+                    style={{ marginTop: errors.confirmPassword ? '-10px' : '0' }}
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    <i className={`bi ${showConfirmPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'} fs-5`}></i>
+                  </button>
+                </div>
+
+                {/* Interactive Password Strength Meter & Requirement Checklist */}
                 {formData.password && (
-                  <div className="space-y-1.5 p-2 rounded-xl bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/50">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-500">Strength:</span>
-                      <span className={`font-bold ${
-                        strength.score >= 3 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'
-                      }`}>
-                        {strength.label}
-                      </span>
+                  <div className="p-3 mb-3 rounded-3 bg-body-tertiary border border-subtle">
+                    <div className="d-flex justify-content-between align-items-center mb-1.5 xsmall">
+                      <span className="fw-semibold text-body">Password Security Index:</span>
+                      <span className="fw-bold" style={{ color: passMetrics.color }}>{passMetrics.label}</span>
                     </div>
-                    <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                    
+                    {/* Animated Progress Bar */}
+                    <div className="progress rounded-pill bg-body mb-2" style={{ height: '6px' }}>
                       <div
-                        className={`h-full strength-bar-fill ${strength.color}`}
-                        style={{ width: `${strength.percent}%` }}
-                      />
+                        className="progress-bar rounded-pill"
+                        style={{ width: `${passMetrics.score}%`, backgroundColor: passMetrics.color, transition: 'all 0.3s ease' }}
+                      ></div>
+                    </div>
+
+                    {/* Requirements Checklist */}
+                    <div className="row g-1 text-muted xsmall" style={{ fontSize: '0.73rem' }}>
+                      <div className={`col-6 ${passMetrics.hasMinLength ? 'text-success fw-bold' : ''}`}>
+                        <i className={`bi ${passMetrics.hasMinLength ? 'bi-check-circle-fill' : 'bi-circle'} me-1`}></i> Min. 8 Characters
+                      </div>
+                      <div className={`col-6 ${passMetrics.hasUppercase ? 'text-success fw-bold' : ''}`}>
+                        <i className={`bi ${passMetrics.hasUppercase ? 'bi-check-circle-fill' : 'bi-circle'} me-1`}></i> Uppercase Letter
+                      </div>
+                      <div className={`col-6 ${passMetrics.hasLowercase ? 'text-success fw-bold' : ''}`}>
+                        <i className={`bi ${passMetrics.hasLowercase ? 'bi-check-circle-fill' : 'bi-circle'} me-1`}></i> Lowercase Letter
+                      </div>
+                      <div className={`col-6 ${passMetrics.hasNumber ? 'text-success fw-bold' : ''}`}>
+                        <i className={`bi ${passMetrics.hasNumber ? 'bi-check-circle-fill' : 'bi-circle'} me-1`}></i> Number Included
+                      </div>
+                      <div className={`col-12 ${passMetrics.hasSpecial ? 'text-success fw-bold' : ''}`}>
+                        <i className={`bi ${passMetrics.hasSpecial ? 'bi-check-circle-fill' : 'bi-circle'} me-1`}></i> Special Character (!@#$%^&*)
+                      </div>
                     </div>
                   </div>
                 )}
+
+                {/* Terms & Conditions Checkbox */}
+                <div className="form-check mb-4 small mt-3">
+                  <input
+                    className={`form-check-input ${errors.terms ? 'is-invalid' : ''}`}
+                    type="checkbox"
+                    id="termsCheck"
+                    checked={formData.termsAccepted}
+                    onChange={(e) => {
+                      setFormData({ ...formData, termsAccepted: e.target.checked });
+                      if (errors.terms) setErrors({ ...errors, terms: '' });
+                    }}
+                  />
+                  <label className="form-check-label text-secondary" htmlFor="termsCheck">
+                    I accept the <a href="#" className="text-primary text-decoration-none fw-semibold">Student Honor Code</a> and <a href="#" className="text-primary text-decoration-none fw-semibold">Campus Portal Terms of Service</a>.
+                  </label>
+                  {errors.terms && <div className="invalid-feedback d-block xsmall mt-1">{errors.terms}</div>}
+                </div>
+
+                {/* Final Action Bar */}
+                <div className="d-flex align-items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handlePrevStep}
+                    className="btn btn-outline-secondary btn-lg rounded-pill px-4 fw-bold py-3"
+                  >
+                    <i className="bi bi-arrow-left me-1"></i>
+                    <span>Previous</span>
+                  </button>
+
+                  <button
+                    type="submit"
+                    onClick={(e) => createRipple(e)}
+                    className="btn btn-primary btn-lg rounded-pill flex-grow-1 fw-bold bg-gradient-accent border-0 py-3 btn-ripple shadow-md d-flex align-items-center justify-content-center gap-2"
+                  >
+                    <span>Create Account</span>
+                    <i className="bi bi-patch-check-fill fs-5"></i>
+                  </button>
+                </div>
               </div>
+            )}
 
-              {/* Confirm Password */}
-              <div className="floating-label-group mb-0">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  name="confirmPassword"
-                  id="confirmPassword"
-                  placeholder=" "
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('confirmPassword')}
-                  className={`glass-input floating-input pr-10 ${
-                    touched.confirmPassword && !isConfirmMatch ? 'border-rose-500 focus:border-rose-500' : ''
-                  }`}
-                  required
-                />
-                <label htmlFor="confirmPassword" className="floating-label">Confirm Password</label>
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  aria-label={showConfirmPassword ? 'Hide Password' : 'Show Password'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
-                >
-                  <i className={`bi ${showConfirmPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'}`} />
-                </button>
-                {touched.confirmPassword && !isConfirmMatch && (
-                  <p className="text-[10px] text-rose-500 font-medium mt-1">Passwords do not match.</p>
-                )}
-              </div>
+          </form>
 
-            </div>
+          {/* Login Option */}
+          <div className="text-center text-secondary small mt-4 pt-3 border-top border-subtle">
+            <span>Already have a campus account? </span>
+            <button
+              onClick={() => onNavigate('login')}
+              className="btn btn-link text-primary p-0 text-decoration-none fw-bold ms-1"
+            >
+              Sign In Here
+            </button>
           </div>
-
-          {/* SECTION 3: TERMS & CONSENT */}
-          <div className="pt-2">
-            <label className="flex items-start gap-3 p-3 rounded-xl bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800/60 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                name="agreeTerms"
-                checked={formData.agreeTerms}
-                onChange={handleChange}
-                className="mt-0.5 w-4 h-4 text-indigo-600 rounded border-slate-300 dark:border-slate-700 cursor-pointer"
-                required
-              />
-              <span className="text-xs text-slate-600 dark:text-slate-300 font-light leading-snug">
-                I agree to the <strong className="text-indigo-600 dark:text-indigo-400">Campus Companion Academic Code of Conduct</strong> and consent to store local session dummy credentials for this web programming demonstration.
-              </span>
-            </label>
-          </div>
-
-          {/* Submit Registration Button */}
-          <RippleButton
-            type="submit"
-            variant="primary"
-            disabled={!isFormValid}
-            className="w-full py-4 text-base font-bold shadow-xl shadow-indigo-500/25"
-          >
-            Complete Registration
-            <i className="bi bi-arrow-right-circle-fill text-lg" />
-          </RippleButton>
-        </form>
-
-        {/* Link back to login */}
-        <div className="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60 text-center text-xs text-slate-600 dark:text-slate-400">
-          Already registered as a student?{' '}
-          <button
-            type="button"
-            onClick={() => {
-              setActiveView('login');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-          >
-            Log In Here
-          </button>
         </div>
       </div>
 
-      {/* ANIMATED SUCCESS CELEBRATION MODAL */}
+      {/* Animated Success Modal / Celebration Popup */}
       {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="w-full max-w-md glass-card p-8 border border-emerald-500/40 shadow-2xl text-center space-y-6 relative overflow-hidden">
-            
-            <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-500 mx-auto flex items-center justify-center text-4xl shadow-inner animate-bounce">
-              <i className="bi bi-check-circle-fill" />
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-2xl font-bold font-heading text-slate-900 dark:text-white">
-                Registration Successful!
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300">
-                Welcome aboard, <strong className="text-indigo-600 dark:text-indigo-400">{formData.firstName} {formData.lastName}</strong>! Your student account is now fully provisioned.
-              </p>
-            </div>
-
-            {/* Temporary ID Pass Badge */}
-            <div className="glass-panel p-4 border border-indigo-500/30 bg-gradient-to-br from-indigo-500/10 to-transparent text-left space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                  Assigned Student Badge
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                  ACTIVE
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center text-sm">
-                  {formData.firstName.charAt(0)}{formData.lastName.charAt(0)}
+        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(10px)' }}>
+          <div className="modal-dialog modal-dialog-centered max-w-md">
+            <div className="modal-content glass-modal border-0 p-4 text-center">
+              <div className="modal-body py-4">
+                <div className="d-inline-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success p-3 mb-3 floating-element" style={{ width: '80px', height: '80px' }}>
+                  <i className="bi bi-patch-check-fill display-4"></i>
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formData.firstName} {formData.lastName}</p>
-                  <p className="text-xs text-slate-500 font-mono">ID: {assignedStudentId}</p>
+                <h3 className="fw-extrabold text-body mb-2">Registration Complete!</h3>
+                <p className="text-secondary small mb-4">
+                  Welcome to Campus Companion, <strong className="text-body">{registeredUser?.name}</strong>. Your student account has been generated with ID <span className="badge bg-primary-subtle text-primary border border-primary-subtle">{registeredUser?.studentId}</span>.
+                </p>
+
+                <div className="d-flex flex-column gap-2">
+                  <button
+                    onClick={() => {
+                      if (registeredUser) onRegisterSuccess(registeredUser);
+                    }}
+                    className="btn btn-primary btn-lg rounded-pill bg-gradient-accent border-0 fw-bold py-2.5 btn-ripple shadow-sm"
+                  >
+                    Go to Portal Dashboard
+                  </button>
+                  <button
+                    onClick={() => onNavigate('login')}
+                    className="btn btn-light rounded-pill py-2 text-secondary small"
+                  >
+                    Go to Login Page
+                  </button>
                 </div>
               </div>
             </div>
-
-            <RippleButton
-              onClick={handleProceedToPortal}
-              variant="primary"
-              className="w-full py-3.5 font-bold shadow-lg"
-            >
-              Enter Student Portal Now
-              <i className="bi bi-speedometer2" />
-            </RippleButton>
           </div>
         </div>
       )}

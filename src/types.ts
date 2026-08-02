@@ -1,17 +1,14 @@
-export type PageView = 'landing' | 'login' | 'register' | 'portal';
+export type PageView = 'landing' | 'login' | 'register' | 'dashboard';
 
-export interface StudentProfile {
-  id: string;
+export interface UserProfile {
   name: string;
   email: string;
   studentId: string;
-  department: string;
   major: string;
-  yearLevel: string;
+  year: string;
   gpa: number;
-  attendanceRate: number;
-  credits: number;
   avatarUrl: string;
+  creditsEarned: number;
 }
 
 export interface Course {
@@ -23,56 +20,64 @@ export interface Course {
   room: string;
   credits: number;
   grade: string;
-  percentage: number;
+  progress: number;
   color: string;
-  nextAssignment: string;
-  dueDate: string;
 }
 
-export interface StatItem {
-  number: string;
-  label: string;
-  icon: string;
-  description: string;
+export interface ScheduleItem {
+  id: string;
+  courseCode: string;
+  title: string;
+  time: string;
+  day: 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri';
+  room: string;
+  instructor: string;
+  type: 'Lecture' | 'Lab' | 'Seminar';
 }
 
-export interface FeatureItem {
+export interface Assignment {
   id: string;
   title: string;
-  description: string;
-  icon: string;
-  badge: string;
-  color: string;
+  courseCode: string;
+  dueDate: string;
+  dueTime: string;
+  status: 'Pending' | 'In Progress' | 'Completed';
+  priority: 'High' | 'Medium' | 'Low';
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  category: 'Academic' | 'Event' | 'Campus Life' | 'Urgent';
+  date: string;
+  summary: string;
+  author: string;
 }
 
 export interface Testimonial {
   id: string;
   name: string;
   role: string;
-  department: string;
-  avatar: string;
+  major: string;
+  comment: string;
   rating: number;
-  text: string;
+  avatar: string;
 }
 
-export interface CampusNotice {
+export interface Feature {
   id: string;
+  icon: string;
   title: string;
-  category: 'Academic' | 'Event' | 'Notice' | 'Exam';
-  date: string;
-  author: string;
-  urgent?: boolean;
+  description: string;
+  badge?: string;
 }
 
-export interface PasswordStrength {
-  score: number; // 0 - 4
-  label: 'Very Weak' | 'Weak' | 'Fair' | 'Strong' | 'Extremely Secure';
-  color: string;
-  percent: number;
-}
-
-export interface ToastMessage {
+export interface StatItem {
   id: string;
-  text: string;
-  type: 'success' | 'info' | 'warning';
+  icon: string;
+  value: string;
+  numericValue: number;
+  suffix: string;
+  label: string;
+  description: string;
 }

@@ -1,187 +1,120 @@
 import React, { useState } from 'react';
 import { PageView } from '../types';
-import { RippleButton } from './RippleButton';
+import { createRipple } from '../utils/ripple';
 
 interface FooterProps {
-  setActiveView: (view: PageView) => void;
-  showToast: (msg: string, type?: 'success' | 'info' | 'warning') => void;
+  onNavigate: (view: PageView) => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ setActiveView, showToast }) => {
-  const [feedbackEmail, setFeedbackEmail] = useState('');
-  const [feedbackText, setFeedbackText] = useState('');
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
 
-  const handleFeedbackSubmit = (e: React.FormEvent) => {
+  const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!feedbackText.trim()) return;
-    setFeedbackSubmitted(true);
-    showToast('Thank you! Your feedback has been recorded for the course project.', 'success');
-    setTimeout(() => {
-      setFeedbackText('');
-      setFeedbackEmail('');
-      setFeedbackSubmitted(false);
-    }, 3000);
+    if (email.trim()) {
+      setSubscribed(true);
+      setEmail('');
+      setTimeout(() => setSubscribed(false), 4000);
+    }
   };
 
   return (
-    <footer className="w-full mt-20 border-t border-white/50 dark:border-white/10 glass-panel rounded-t-3xl rounded-b-none relative overflow-hidden">
-      {/* Background Soft Glow */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
-          
-          {/* Brand Info */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
-                <i className="bi bi-mortarboard-fill text-xl" />
+    <footer className="pt-5 pb-4 mt-5 position-relative border-top border-subtle glass-nav">
+      <div className="container max-w-7xl">
+        <div className="row gy-4 mb-5">
+          {/* Brand Col */}
+          <div className="col-lg-4 col-md-6">
+            <div className="d-flex align-items-center gap-2 mb-3">
+              <div className="d-flex align-items-center justify-content-center rounded-3 bg-gradient-accent text-white p-2 shadow-sm" style={{ width: '36px', height: '36px' }}>
+                <i className="bi bi-mortarboard-fill fs-5"></i>
               </div>
-              <span className="text-xl font-bold font-heading text-slate-900 dark:text-white tracking-tight">
-                Campus Companion
-              </span>
+              <span className="fw-extrabold fs-5 tracking-tight text-body">Campus Companion</span>
             </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 font-light max-w-sm leading-relaxed">
-              A premium, Apple-inspired frontend student portal developed for university Web Programming. Engineered with modern Glassmorphism, smooth animations, and realistic dummy academic engines.
+            <p className="text-secondary small mb-3 max-w-sm">
+              The premier student portal engineered for university excellence. Experience glassmorphic design, instant schedule tracking, and academic organization.
             </p>
-            <div className="flex items-center gap-3 pt-2">
-              <a
-                href="#github"
-                onClick={(e) => { e.preventDefault(); showToast('GitHub repository view demo link clicked', 'info'); }}
-                className="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition-colors"
-                title="GitHub Repository"
-              >
-                <i className="bi bi-github text-lg" />
+            <div className="d-flex gap-2">
+              <a href="#" className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0 text-body" style={{ width: '36px', height: '36px' }} aria-label="Twitter">
+                <i className="bi bi-twitter-x"></i>
               </a>
-              <a
-                href="#twitter"
-                onClick={(e) => { e.preventDefault(); showToast('Campus Twitter link clicked', 'info'); }}
-                className="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition-colors"
-                title="Campus Twitter"
-              >
-                <i className="bi bi-twitter-x text-lg" />
+              <a href="#" className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0 text-body" style={{ width: '36px', height: '36px' }} aria-label="GitHub">
+                <i className="bi bi-github"></i>
               </a>
-              <a
-                href="#linkedin"
-                onClick={(e) => { e.preventDefault(); showToast('Student Network link clicked', 'info'); }}
-                className="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition-colors"
-                title="LinkedIn Network"
-              >
-                <i className="bi bi-linkedin text-lg" />
+              <a href="#" className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0 text-body" style={{ width: '36px', height: '36px' }} aria-label="LinkedIn">
+                <i className="bi bi-linkedin"></i>
+              </a>
+              <a href="#" className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0 text-body" style={{ width: '36px', height: '36px' }} aria-label="Instagram">
+                <i className="bi bi-instagram"></i>
               </a>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-heading">
-              Quick Views
-            </h4>
-            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <li>
-                <button
-                  onClick={() => { setActiveView('landing'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer"
-                >
-                  Landing Page
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => { setActiveView('login'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer"
-                >
-                  Student Login
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => { setActiveView('register'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer"
-                >
-                  New Student Registration
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => { setActiveView('portal'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer"
-                >
-                  Interactive Portal Demo
-                </button>
-              </li>
+          {/* Nav Links */}
+          <div className="col-lg-2 col-md-6 col-6">
+            <h6 className="fw-bold text-body mb-3 small text-uppercase tracking-wider">Quick Navigation</h6>
+            <ul className="list-unstyled d-flex flex-column gap-2 small">
+              <li><button onClick={() => onNavigate('landing')} className="btn btn-link p-0 text-decoration-none text-secondary">Home</button></li>
+              <li><a href="#features" className="text-decoration-none text-secondary">Features</a></li>
+              <li><a href="#stats" className="text-decoration-none text-secondary">Statistics</a></li>
+              <li><a href="#testimonials" className="text-decoration-none text-secondary">Testimonials</a></li>
+              <li><button onClick={() => onNavigate('dashboard')} className="btn btn-link p-0 text-decoration-none text-primary fw-semibold">Student Portal</button></li>
             </ul>
           </div>
 
-          {/* Academic Features */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-heading">
-              Portal Modules
-            </h4>
-            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <li className="flex items-center gap-2">
-                <i className="bi bi-check2 text-indigo-500" />
-                Course Timetable Matrix
-              </li>
-              <li className="flex items-center gap-2">
-                <i className="bi bi-check2 text-indigo-500" />
-                Predictive GPA Simulator
-              </li>
-              <li className="flex items-center gap-2">
-                <i className="bi bi-check2 text-indigo-500" />
-                Contactless Digital Pass
-              </li>
-              <li className="flex items-center gap-2">
-                <i className="bi bi-check2 text-indigo-500" />
-                Multi-Column Registration
-              </li>
+          {/* Student Services */}
+          <div className="col-lg-2 col-md-6 col-6">
+            <h6 className="fw-bold text-body mb-3 small text-uppercase tracking-wider">Student Resources</h6>
+            <ul className="list-unstyled d-flex flex-column gap-2 small text-secondary">
+              <li>Course Directory</li>
+              <li>Academic Calendar</li>
+              <li>Library Commons</li>
+              <li>Financial Aid Office</li>
+              <li>IT Support Services</li>
             </ul>
           </div>
 
-          {/* Quick Course Feedback Form */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-heading">
-              Project Feedback
-            </h4>
-            {feedbackSubmitted ? (
-              <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-medium flex items-center gap-2">
-                <i className="bi bi-check-circle-fill text-base" />
-                Feedback recorded! Thank you.
+          {/* Newsletter Form */}
+          <div className="col-lg-4 col-md-6">
+            <h6 className="fw-bold text-body mb-3 small text-uppercase tracking-wider">Campus News Bulletin</h6>
+            <p className="text-secondary small mb-3">Subscribe to receive weekly campus announcements and academic deadlines directly.</p>
+            
+            {subscribed ? (
+              <div className="alert alert-success rounded-3 p-2.5 small d-flex align-items-center gap-2 mb-0">
+                <i className="bi bi-check-circle-fill fs-5"></i>
+                <span>Subscribed! You will receive campus news updates.</span>
               </div>
             ) : (
-              <form onSubmit={handleFeedbackSubmit} className="space-y-2">
+              <form onSubmit={handleSubscribe} className="d-flex gap-2">
                 <input
                   type="email"
-                  placeholder="Your university email..."
-                  value={feedbackEmail}
-                  onChange={(e) => setFeedbackEmail(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl glass-input"
-                />
-                <textarea
-                  rows={2}
-                  placeholder="Course project notes..."
-                  value={feedbackText}
-                  onChange={(e) => setFeedbackText(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl glass-input resize-none"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter university email..."
+                  className="form-control rounded-pill bg-body-tertiary border-subtle px-3 py-2 small"
                 />
-                <RippleButton type="submit" variant="primary" className="w-full py-2 text-xs font-semibold">
-                  Send Feedback
-                </RippleButton>
+                <button 
+                  type="submit" 
+                  onClick={(e) => createRipple(e)}
+                  className="btn btn-primary rounded-pill bg-gradient-accent border-0 fw-semibold px-3 py-2 btn-ripple flex-shrink-0"
+                >
+                  Join
+                </button>
               </form>
             )}
           </div>
         </div>
 
-        {/* Bottom Copyright Bar */}
-        <div className="mt-12 pt-6 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-          <p>© {new Date().getFullYear()} Campus Companion • University Web Programming Course Project.</p>
-          <div className="flex items-center gap-4">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-mono text-[10px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping" />
-              100% Frontend Client-Side
-            </span>
+        {/* Bottom Bar */}
+        <div className="pt-4 border-top border-subtle d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 text-muted xsmall" style={{ fontSize: '0.8rem' }}>
+          <div>© {new Date().getFullYear()} Campus Companion. University Web Programming Final Project.</div>
+          <div className="d-flex gap-3">
+            <span>Privacy Policy</span>
+            <span>•</span>
+            <span>Terms of Service</span>
+            <span>•</span>
+            <span>Accessibility</span>
           </div>
         </div>
       </div>

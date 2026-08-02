@@ -1,214 +1,249 @@
-import { FeatureItem, StatItem, Testimonial, Course, CampusNotice, StudentProfile } from '../types';
+import { Course, ScheduleItem, Assignment, Announcement, Testimonial, Feature, StatItem, UserProfile } from '../types';
 
-export const mockStudentProfile: StudentProfile = {
-  id: 'st-2026-8849',
-  name: 'Alex Rivera',
-  email: 'alex.rivera@university.edu',
-  studentId: '2026-8849',
-  department: 'School of Computing & Data Science',
-  major: 'B.Sc. Software Engineering',
-  yearLevel: 'Senior (Year 4)',
+export const initialUserProfile: UserProfile = {
+  name: 'Alex Morgan',
+  email: 'alex.morgan@university.edu',
+  studentId: 'STU-2024-8892',
+  major: 'Computer Science & Software Engineering',
+  year: 'Senior (Year 4)',
   gpa: 3.88,
-  attendanceRate: 96,
-  credits: 114,
-  avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+  avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+  creditsEarned: 104,
 };
 
 export const mockCourses: Course[] = [
   {
-    id: 'cs401',
-    code: 'CS 401',
-    title: 'Advanced Web Programming & Frameworks',
-    instructor: 'Dr. Evelyn Vance',
+    id: 'c1',
+    code: 'CS 302',
+    title: 'Web Programming & Modern Frameworks',
+    instructor: 'Dr. Sarah Jenkins',
     schedule: 'Mon & Wed • 10:00 AM - 11:30 AM',
-    room: 'Tech Hub Hall 302',
+    room: 'Tech Hub 402',
     credits: 4,
     grade: 'A',
-    percentage: 94,
-    color: 'from-blue-500 to-indigo-600',
-    nextAssignment: 'Responsive Glassmorphism Portal Architecture',
-    dueDate: 'Tomorrow at 11:59 PM',
+    progress: 92,
+    color: '#2563eb'
   },
   {
-    id: 'cs420',
-    code: 'CS 420',
-    title: 'Distributed Cloud Architecture & Microservices',
-    instructor: 'Prof. Marcus Chen',
-    schedule: 'Tue & Thu • 01:30 PM - 03:00 PM',
-    room: 'Science Complex B12',
+    id: 'c2',
+    code: 'CS 401',
+    title: 'Artificial Intelligence & Neural Networks',
+    instructor: 'Prof. Robert Chen',
+    schedule: 'Tue & Thu • 01:00 PM - 02:30 PM',
+    room: 'Science Bld 108',
     credits: 4,
     grade: 'A-',
-    percentage: 91,
-    color: 'from-purple-500 to-violet-600',
-    nextAssignment: 'Dockerized Microservices Benchmark Report',
-    dueDate: 'In 3 days',
+    progress: 88,
+    color: '#7c3aed'
   },
   {
-    id: 'ds310',
-    code: 'DS 310',
-    title: 'Machine Learning & Predictive Analytics',
-    instructor: 'Dr. Sarah Jenkins',
-    schedule: 'Friday • 09:00 AM - 12:00 PM',
-    room: 'AI Computing Lab 1',
-    credits: 3,
-    grade: 'A',
-    percentage: 96,
-    color: 'from-emerald-500 to-teal-600',
-    nextAssignment: 'Neural Net Model Training Notebook',
-    dueDate: 'Next Monday',
-  },
-  {
-    id: 'se450',
-    code: 'SE 450',
-    title: 'Human-Computer Interaction & UX Systems',
-    instructor: 'Prof. Jonathan Ross',
-    schedule: 'Wed • 02:00 PM - 05:00 PM',
-    room: 'Design Studio 104',
+    id: 'c3',
+    code: 'MA 201',
+    title: 'Linear Algebra & Optimization',
+    instructor: 'Dr. Elena Rostova',
+    schedule: 'Mon & Wed • 02:00 PM - 03:30 PM',
+    room: 'Math Annex 204',
     credits: 3,
     grade: 'B+',
-    percentage: 88,
-    color: 'from-amber-500 to-orange-600',
-    nextAssignment: 'Mobile Design System Audit & Prototype',
-    dueDate: 'In 5 days',
+    progress: 81,
+    color: '#059669'
   },
+  {
+    id: 'c4',
+    code: 'EN 110',
+    title: 'Technical Communication & Rhetoric',
+    instructor: 'Prof. Marcus Vance',
+    schedule: 'Fri • 09:00 AM - 12:00 PM',
+    room: 'Humanities 312',
+    credits: 3,
+    grade: 'A',
+    progress: 95,
+    color: '#d97706'
+  }
+];
+
+export const mockSchedule: ScheduleItem[] = [
+  { id: 's1', courseCode: 'CS 302', title: 'Web Programming Lecture', time: '10:00 AM - 11:30 AM', day: 'Mon', room: 'Tech Hub 402', instructor: 'Dr. Sarah Jenkins', type: 'Lecture' },
+  { id: 's2', courseCode: 'MA 201', title: 'Linear Algebra Recitation', time: '02:00 PM - 03:30 PM', day: 'Mon', room: 'Math Annex 204', instructor: 'Dr. Elena Rostova', type: 'Seminar' },
+  { id: 's3', courseCode: 'CS 401', title: 'AI Lab & Machine Learning', time: '01:00 PM - 02:30 PM', day: 'Tue', room: 'Science Bld 108', instructor: 'Prof. Robert Chen', type: 'Lab' },
+  { id: 's4', courseCode: 'CS 302', title: 'Web Dev Workshop', time: '10:00 AM - 11:30 AM', day: 'Wed', room: 'Tech Hub 402', instructor: 'Dr. Sarah Jenkins', type: 'Lab' },
+  { id: 's5', courseCode: 'MA 201', title: 'Linear Algebra', time: '02:00 PM - 03:30 PM', day: 'Wed', room: 'Math Annex 204', instructor: 'Dr. Elena Rostova', type: 'Lecture' },
+  { id: 's6', courseCode: 'CS 401', title: 'Neural Networks Theory', time: '01:00 PM - 02:30 PM', day: 'Thu', room: 'Science Bld 108', instructor: 'Prof. Robert Chen', type: 'Lecture' },
+  { id: 's7', courseCode: 'EN 110', title: 'Technical Writing Seminar', time: '09:00 AM - 12:00 PM', day: 'Fri', room: 'Humanities 312', instructor: 'Prof. Marcus Vance', type: 'Seminar' },
+];
+
+export const mockAssignments: Assignment[] = [
+  {
+    id: 'a1',
+    title: 'Frontend Web Portal Project Submission',
+    courseCode: 'CS 302',
+    dueDate: '2026-08-05',
+    dueTime: '11:59 PM',
+    status: 'In Progress',
+    priority: 'High'
+  },
+  {
+    id: 'a2',
+    title: 'Neural Network Model Hyperparameter Tuning',
+    courseCode: 'CS 401',
+    dueDate: '2026-08-08',
+    dueTime: '05:00 PM',
+    status: 'Pending',
+    priority: 'High'
+  },
+  {
+    id: 'a3',
+    title: 'Matrix Eigenvalues Problem Set 4',
+    courseCode: 'MA 201',
+    dueDate: '2026-08-10',
+    dueTime: '11:59 PM',
+    status: 'Pending',
+    priority: 'Medium'
+  },
+  {
+    id: 'a4',
+    title: 'Draft Technical Proposal for Software Project',
+    courseCode: 'EN 110',
+    dueDate: '2026-08-02',
+    dueTime: '08:00 PM',
+    status: 'Completed',
+    priority: 'Low'
+  }
+];
+
+export const mockAnnouncements: Announcement[] = [
+  {
+    id: 'an1',
+    title: 'Fall 2026 Course Registration Window Opens Next Week',
+    category: 'Academic',
+    date: 'August 1, 2026',
+    summary: 'Check your student advisor portal to clear any holds before priority enrollment starts on August 10.',
+    author: 'Office of the Registrar'
+  },
+  {
+    id: 'an2',
+    title: 'Annual Campus Hackathon & Tech Expo 2026',
+    category: 'Event',
+    date: 'July 29, 2026',
+    summary: 'Join over 500 student developers, designers, and innovators for 36 hours of creation and over $15,000 in prizes.',
+    author: 'Computer Science Department'
+  },
+  {
+    id: 'an3',
+    title: 'Library Hours Extended for Midterm Study Weeks',
+    category: 'Campus Life',
+    date: 'July 25, 2026',
+    summary: 'The Main University Library and 24/7 Study Commons will offer complimentary coffee and quiet zones through midnight.',
+    author: 'University Libraries'
+  }
+];
+
+export const mockFeatures: Feature[] = [
+  {
+    id: 'f1',
+    icon: 'bi-speedometer2',
+    title: 'Smart Course Dashboard',
+    description: 'Track real-time grades, GPA projections, syllabus schedules, and assignment progress in one central glass hub.',
+    badge: 'Popular'
+  },
+  {
+    id: 'f2',
+    icon: 'bi-calendar3',
+    title: 'Interactive Class Schedule',
+    description: 'Visual daily and weekly timelines synchronized with room locations, faculty office hours, and exam dates.',
+    badge: 'Real-time'
+  },
+  {
+    id: 'f3',
+    icon: 'bi-shield-check',
+    title: 'Encrypted Student Pass',
+    description: 'Seamless digital credentials with instant QR access to university libraries, labs, dining halls, and campus events.'
+  },
+  {
+    id: 'f4',
+    icon: 'bi-bell-fill',
+    title: 'Instant Deadline Alerts',
+    description: 'Never miss an assignment deadline with customized push notifications, priority tags, and study countdowns.'
+  },
+  {
+    id: 'f5',
+    icon: 'bi-people-fill',
+    title: 'Peer Study Groups',
+    description: 'Connect with classmates, share verified lecture notes, and collaborate on group assignments effortlessly.'
+  },
+  {
+    id: 'f6',
+    icon: 'bi-moon-stars-fill',
+    title: 'Apple-Inspired Dark Mode',
+    description: 'Beautiful, eye-friendly OLED dark theme designed specifically for late-night study sessions.'
+  }
 ];
 
 export const mockStats: StatItem[] = [
   {
-    number: '18,500+',
+    id: 's1',
+    icon: 'bi-people',
+    value: '18,500',
+    numericValue: 18500,
+    suffix: '+',
     label: 'Active Students',
-    icon: 'bi-people-fill',
-    description: 'Empowered across 12 academic faculties and 48 departments worldwide.',
+    description: 'Empowered across 12 academic faculties'
   },
   {
-    number: '99.4%',
-    label: 'Portal Uptime',
-    icon: 'bi-speedometer2',
-    description: 'Ultra-low latency cloud ecosystem engineered for seamless peak registration.',
+    id: 's2',
+    icon: 'bi-mortarboard',
+    value: '98.4',
+    numericValue: 98.4,
+    suffix: '%',
+    label: 'Graduation Rate',
+    description: 'Consistently ranked in national top 5%'
   },
   {
-    number: '450+',
-    label: 'Faculty Courses',
-    icon: 'bi-journal-bookmark-fill',
-    description: 'Comprehensive digitized syllabus, real-time assignment portals & video archives.',
+    id: 's3',
+    icon: 'bi-journal-check',
+    value: '420',
+    numericValue: 420,
+    suffix: '+',
+    label: 'Courses Offered',
+    description: 'Comprehensive undergraduate & master tracks'
   },
   {
-    number: '4.9 / 5.0',
-    label: 'Satisfaction Score',
-    icon: 'bi-star-fill',
-    description: 'Voted #1 Student Academic Interface by University Web Programming Board.',
-  },
-];
-
-export const mockFeatures: FeatureItem[] = [
-  {
-    id: 'f1',
-    title: 'Smart Course Matrix',
-    description: 'Real-time schedule synchronization with class room navigation, syllabus tracking, and direct professor messaging.',
-    icon: 'bi-calendar3',
-    badge: 'Real-Time Sync',
-    color: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
-  },
-  {
-    id: 'f2',
-    title: 'GPA & Grade Simulator',
-    description: 'Interactive analytics engine allowing you to simulate future test results and project semester honors GPA effortlessly.',
-    icon: 'bi-graph-up-arrow',
-    badge: 'Predictive AI',
-    color: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
-  },
-  {
-    id: 'f3',
-    title: 'Instant Campus Notices',
-    description: 'Direct push notifications for urgent campus announcements, exam hall updates, weather alerts, and club activities.',
-    icon: 'bi-bell-fill',
-    badge: 'Live Feed',
-    color: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
-  },
-  {
-    id: 'f4',
-    title: 'Digital ID Pass & Library',
-    description: 'NFC-ready digital student identity badge with embedded QR pass for 24/7 library turnstiles and sports facilities.',
-    icon: 'bi-card-heading',
-    badge: 'Contactless',
-    color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
-  },
-  {
-    id: 'f5',
-    title: 'AI Study Assistant',
-    description: 'Smart group matchmaker connecting peers in identical courses and auto-summarizing lecture transcripts.',
-    icon: 'bi-cpu-fill',
-    badge: 'Next-Gen',
-    color: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20',
-  },
-  {
-    id: 'f6',
-    title: 'Tuition & Financial Portal',
-    description: 'Transparent tuition breakdowns, online scholarship applications, instant receipt generation, and payment plans.',
-    icon: 'bi-wallet2',
-    badge: 'Secure Pay',
-    color: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20',
-  },
+    id: 's4',
+    icon: 'bi-award',
+    value: '3.82',
+    numericValue: 3.82,
+    suffix: '',
+    label: 'Avg Student GPA',
+    description: 'Demonstrating academic excellence'
+  }
 ];
 
 export const mockTestimonials: Testimonial[] = [
   {
     id: 't1',
-    name: 'Maya Lin',
-    role: 'Undergraduate Student',
-    department: 'B.Sc. Data Science, Class of 2026',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
+    name: 'Sophia Martinez',
+    role: 'Computer Science Major',
+    major: 'Class of 2026',
+    comment: 'Campus Companion transformed how I manage my coursework. The glassmorphism UI is stunning, and having my schedule and assignments in one place saved my semester!',
     rating: 5,
-    text: 'Campus Companion transformed how I manage my coursework. The GPA simulator helped me budget study hours for finals, and the glassmorphic dark theme is super easy on the eyes during late night coding!',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80'
   },
   {
     id: 't2',
-    name: 'David K. O\'Connor',
-    role: 'Student Council President',
-    department: 'B.A. Political Science, Class of 2025',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+    name: 'David K. Chen',
+    role: 'Biomedical Engineering',
+    major: 'Class of 2025',
+    comment: 'The password security meter and multi-step registration feel so premium! It feels like an official Apple product for university students.',
     rating: 5,
-    text: 'The responsiveness and smooth animations make it feel like an official Apple product. Navigating class notices and library reservations takes seconds now instead of clicking through 10 old university portals.',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
   },
   {
     id: 't3',
-    name: 'Sophia Patel',
-    role: 'Graduate Research Fellow',
-    department: 'M.Sc. Biomedical Engineering',
-    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=200&q=80',
+    name: 'Emily Watson',
+    role: 'Business & Finance',
+    major: 'Class of 2027',
+    comment: 'Dark mode is a lifesaver during 2:00 AM study sessions in the library. The assignment status filters keep me completely organized.',
     rating: 5,
-    text: 'Registering for lab modules used to be stressful. Campus Companion\'s multi-column registration validation and clean UI made enrollment smooth and instantaneous. Absolutely top-tier design!',
-  },
-];
-
-export const mockNotices: CampusNotice[] = [
-  {
-    id: 'n1',
-    title: 'Final Examination Timetable Released for Spring Semester',
-    category: 'Exam',
-    date: 'Today, 09:30 AM',
-    author: 'Office of Academic Registrar',
-    urgent: true,
-  },
-  {
-    id: 'n2',
-    title: 'Annual Web Programming & AI Innovation Hackathon Registration Open',
-    category: 'Event',
-    date: 'Yesterday',
-    author: 'School of Computing Faculty',
-  },
-  {
-    id: 'n3',
-    title: 'Campus Central Library Extended 24/7 Hours During Prep Week',
-    category: 'Notice',
-    date: '2 days ago',
-    author: 'University Library Services',
-  },
-  {
-    id: 'n4',
-    title: 'Fall Semester Course Selection & Pre-Enrollment Guide',
-    category: 'Academic',
-    date: '3 days ago',
-    author: 'Student Advising Center',
-  },
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+  }
 ];
