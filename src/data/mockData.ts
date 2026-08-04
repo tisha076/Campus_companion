@@ -1,4 +1,4 @@
-import { Course, ScheduleItem, Assignment, Announcement, Testimonial, Feature, StatItem, UserProfile } from '../types';
+import { Course, ScheduleItem, Assignment, Announcement, Testimonial, Feature, StatItem, UserProfile, NoteItem, AttendanceRecord } from '../types';
 
 export const initialUserProfile: UserProfile = {
   name: 'Alex Morgan',
@@ -142,40 +142,65 @@ export const mockFeatures: Feature[] = [
   {
     id: 'f1',
     icon: 'bi-speedometer2',
-    title: 'Smart Course Dashboard',
-    description: 'Track real-time grades, GPA projections, syllabus schedules, and assignment progress in one central glass hub.',
-    badge: 'Popular'
+    title: 'Student Dashboard',
+    description: 'Central academic hub with course progress, stats summary, daily timetable preview, and upcoming deadlines.',
+    badge: 'Core Hub',
+    targetView: 'dashboard',
+    buttonText: 'Explore Dashboard'
   },
   {
     id: 'f2',
-    icon: 'bi-calendar3',
-    title: 'Interactive Class Schedule',
-    description: 'Visual daily and weekly timelines synchronized with room locations, faculty office hours, and exam dates.',
-    badge: 'Real-time'
+    icon: 'bi-calendar-week',
+    title: 'Class Routine & Schedule',
+    description: 'Weekly lecture timetable with room locations, instructor details, time slots, and day-by-day filter.',
+    badge: 'Timetable',
+    targetView: 'routine',
+    buttonText: 'View Class Routine'
   },
   {
     id: 'f3',
-    icon: 'bi-shield-check',
-    title: 'Encrypted Student Pass',
-    description: 'Seamless digital credentials with instant QR access to university libraries, labs, dining halls, and campus events.'
+    icon: 'bi-check2-square',
+    title: 'Assignment Tracker',
+    description: 'Manage assignment deadlines, track submission status, set priorities, and add new academic tasks.',
+    badge: 'Task Manager',
+    targetView: 'assignments',
+    buttonText: 'Track Assignments'
   },
   {
     id: 'f4',
-    icon: 'bi-bell-fill',
-    title: 'Instant Deadline Alerts',
-    description: 'Never miss an assignment deadline with customized push notifications, priority tags, and study countdowns.'
+    icon: 'bi-percent',
+    title: 'Attendance Calculator',
+    description: 'Monitor course attendance percentages, check exam eligibility thresholds, and calculate safe miss margins.',
+    badge: 'Eligibility Tool',
+    targetView: 'attendance',
+    buttonText: 'Calculate Attendance'
   },
   {
     id: 'f5',
-    icon: 'bi-people-fill',
-    title: 'Peer Study Groups',
-    description: 'Connect with classmates, share verified lecture notes, and collaborate on group assignments effortlessly.'
+    icon: 'bi-calculator',
+    title: 'CGPA Calculator',
+    description: 'Calculate semester GPA and cumulative CGPA on a 4.0 academic scale with instant letter grade points.',
+    badge: 'Grade Tool',
+    targetView: 'cgpa',
+    buttonText: 'Calculate CGPA'
   },
   {
     id: 'f6',
-    icon: 'bi-moon-stars-fill',
-    title: 'Apple-Inspired Dark Mode',
-    description: 'Beautiful, eye-friendly OLED dark theme designed specifically for late-night study sessions.'
+    icon: 'bi-journal-text',
+    title: 'Digital Study Notes',
+    description: 'Organize lecture summaries, exam preparation guides, and revision materials with category tags.',
+    badge: 'Study Hub',
+    targetView: 'notes',
+    buttonText: 'View Study Notes'
+  },
+  {
+    id: 'f7',
+    icon: 'bi-person-badge',
+    title: 'Student Profile',
+    description: 'Manage student records, view major details, track earned credit totals, and view digital student pass.',
+    badge: 'Records',
+    targetView: 'profile',
+    buttonText: 'View Student Profile'
   }
 ];
 
@@ -216,6 +241,40 @@ export const mockStats: StatItem[] = [
     label: 'Avg Student GPA',
     description: 'Demonstrating academic excellence'
   }
+];
+
+export const mockNotes: NoteItem[] = [
+  {
+    id: 'n1',
+    title: 'DOM Manipulation & Event Listeners in JavaScript',
+    courseCode: 'CS 302',
+    content: 'Key concepts: addEventListener, event bubbling vs capturing, querySelectorAll, modifying style properties, and form validation techniques.',
+    date: 'Aug 02, 2026',
+    category: 'Lecture Note'
+  },
+  {
+    id: 'n2',
+    title: 'Supervised vs Unsupervised Learning Summary',
+    courseCode: 'CS 401',
+    content: 'Supervised learning uses labeled training data (classification, regression). Unsupervised uses unlabeled data (clustering, PCA). Exam focus on backpropagation.',
+    date: 'Jul 28, 2026',
+    category: 'Exam Prep'
+  },
+  {
+    id: 'n3',
+    title: 'Matrix Diagonalization Formulas',
+    courseCode: 'MA 201',
+    content: 'A = PDP^-1 where P consists of eigenvectors and D is diagonal matrix of corresponding eigenvalues.',
+    date: 'Jul 24, 2026',
+    category: 'Lecture Note'
+  }
+];
+
+export const mockAttendance: AttendanceRecord[] = [
+  { id: 'att1', courseCode: 'CS 302', courseTitle: 'Web Programming & Modern Frameworks', totalClasses: 20, attendedClasses: 19 },
+  { id: 'att2', courseCode: 'CS 401', courseTitle: 'Artificial Intelligence & Neural Networks', totalClasses: 18, attendedClasses: 16 },
+  { id: 'att3', courseCode: 'MA 201', courseTitle: 'Linear Algebra & Optimization', totalClasses: 16, attendedClasses: 14 },
+  { id: 'att4', courseCode: 'EN 110', courseTitle: 'Technical Communication & Rhetoric', totalClasses: 12, attendedClasses: 12 }
 ];
 
 export const mockTestimonials: Testimonial[] = [

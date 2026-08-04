@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { PageView, UserProfile } from '../types';
-import { createRipple } from '../utils/ripple';
 
 interface NavbarProps {
   currentView: PageView;
@@ -21,8 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleNavClick = (view: PageView, event?: React.MouseEvent<HTMLElement>) => {
-    if (event) createRipple(event);
+  const handleNavClick = (view: PageView) => {
     setCurrentView(view);
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -33,7 +31,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="container-fluid max-w-7xl">
         {/* Brand Logo */}
         <button 
-          onClick={(e) => handleNavClick('landing', e)}
+          onClick={() => handleNavClick('landing')}
           className="navbar-brand d-flex align-items-center gap-2 border-0 bg-transparent p-0 text-start"
         >
           <div className="d-flex align-items-center justify-content-center rounded-3 bg-gradient-accent text-white shadow-sm" style={{ width: '38px', height: '38px' }}>
@@ -45,12 +43,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </button>
 
-        {/* Action Controls & Mobile Toggle */}
+        {/* Dark Mode & User Profile Actions */}
         <div className="d-flex align-items-center gap-2 order-lg-3">
-          {/* Dark Mode Toggle */}
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center border-0 btn-ripple shadow-none"
+            className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center border-0 shadow-none"
             style={{ width: '40px', height: '40px', backgroundColor: 'rgba(148, 163, 184, 0.12)' }}
             title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             aria-label="Toggle Dark Mode"
@@ -58,7 +55,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <i className={`bi ${darkMode ? 'bi-sun-fill text-warning' : 'bi-moon-stars-fill text-primary'} fs-5`}></i>
           </button>
 
-          {/* User Status / Quick Buttons */}
           {user ? (
             <div className="dropdown">
               <button
@@ -78,8 +74,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className="badge bg-primary-subtle text-primary mt-1 rounded-pill">{user.studentId}</span>
                 </li>
                 <li>
-                  <button className="dropdown-item rounded-3 mt-1 d-flex align-items-center gap-2 py-2" onClick={(e) => handleNavClick('dashboard', e)}>
+                  <button className="dropdown-item rounded-3 mt-1 d-flex align-items-center gap-2 py-2" onClick={() => handleNavClick('dashboard')}>
                     <i className="bi bi-speedometer2 text-primary"></i> Dashboard
+                  </button>
+                </li>
+                <li>
+                  <button className="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2" onClick={() => handleNavClick('profile')}>
+                    <i className="bi bi-person-badge text-primary"></i> Student Profile
                   </button>
                 </li>
                 <li>
@@ -92,21 +93,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <div className="d-none d-sm-flex align-items-center gap-2">
               <button
-                onClick={(e) => handleNavClick('login', e)}
-                className={`btn btn-link text-decoration-none fw-semibold rounded-pill px-3 py-2 btn-ripple ${currentView === 'login' ? 'text-primary fw-bold' : 'text-body'}`}
+                onClick={() => handleNavClick('login')}
+                className={`btn btn-link text-decoration-none fw-semibold rounded-pill px-3 py-2 ${currentView === 'login' ? 'text-primary fw-bold' : 'text-body'}`}
               >
                 Log In
               </button>
               <button
-                onClick={(e) => handleNavClick('register', e)}
-                className="btn btn-primary rounded-pill fw-semibold px-4 py-2 shadow-sm bg-gradient-accent border-0 btn-ripple"
+                onClick={() => handleNavClick('register')}
+                className="btn btn-primary rounded-pill fw-semibold px-4 py-2 shadow-sm bg-gradient-accent border-0"
               >
-                Get Started
+                Register
               </button>
             </div>
           )}
 
-          {/* Mobile Menu Hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="navbar-toggler border-0 shadow-none p-2 rounded-circle d-lg-none"
@@ -117,72 +117,104 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </div>
 
-        {/* Navigation Links */}
+        {/* Main Nav Links */}
         <div className={`collapse navbar-collapse ${mobileMenuOpen ? 'show mt-3 p-3 rounded-4 glass-card' : ''}`} id="navbarNav">
-          <ul className="navbar-nav mx-auto align-items-lg-center gap-1 gap-lg-3 fw-medium">
+          <ul className="navbar-nav mx-auto align-items-lg-center gap-1 gap-lg-1 fw-medium small">
             <li className="nav-item">
               <button
-                onClick={(e) => handleNavClick('landing', e)}
-                className={`nav-link border-0 bg-transparent py-2 px-3 rounded-pill text-start w-100 ${currentView === 'landing' ? 'active fw-bold text-primary bg-primary-subtle' : 'text-body-secondary'}`}
+                onClick={() => handleNavClick('landing')}
+                className={`nav-link border-0 bg-transparent py-1.5 px-2.5 rounded-pill text-start w-100 ${currentView === 'landing' || currentView === 'home' ? 'active fw-bold text-primary bg-primary-subtle' : 'text-body-secondary'}`}
               >
-                <i className="bi bi-house-door me-1 d-lg-none"></i> Home
+                Home
               </button>
             </li>
-            
-            <li className="nav-item">
-              <a 
-                href="#features" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="nav-link py-2 px-3 rounded-pill text-start text-body-secondary"
-              >
-                <i className="bi bi-stars me-1 d-lg-none"></i> Features
-              </a>
-            </li>
 
             <li className="nav-item">
-              <a 
-                href="#stats" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="nav-link py-2 px-3 rounded-pill text-start text-body-secondary"
+              <button
+                onClick={() => handleNavClick('dashboard')}
+                className={`nav-link border-0 bg-transparent py-1.5 px-2.5 rounded-pill text-start w-100 ${currentView === 'dashboard' ? 'active fw-bold text-primary bg-primary-subtle' : 'text-body-secondary'}`}
               >
-                <i className="bi bi-bar-chart-line me-1 d-lg-none"></i> Impact
-              </a>
-            </li>
-
-            <li className="nav-item">
-              <a 
-                href="#testimonials" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="nav-link py-2 px-3 rounded-pill text-start text-body-secondary"
-              >
-                <i className="bi bi-chat-quote me-1 d-lg-none"></i> Reviews
-              </a>
+                Dashboard
+              </button>
             </li>
 
             <li className="nav-item">
               <button
-                onClick={(e) => handleNavClick('dashboard', e)}
-                className={`nav-link border-0 bg-transparent py-2 px-3 rounded-pill text-start w-100 ${currentView === 'dashboard' ? 'active fw-bold text-primary bg-primary-subtle' : 'text-body-secondary'}`}
+                onClick={() => handleNavClick('routine')}
+                className={`nav-link border-0 bg-transparent py-1.5 px-2.5 rounded-pill text-start w-100 ${currentView === 'routine' ? 'active fw-bold text-primary bg-primary-subtle' : 'text-body-secondary'}`}
               >
-                <i className="bi bi-speedometer2 me-1 text-primary"></i> Portal Dashboard
+                Routine
+              </button>
+            </li>
+
+            <li className="nav-item">
+              <button
+                onClick={() => handleNavClick('assignments')}
+                className={`nav-link border-0 bg-transparent py-1.5 px-2.5 rounded-pill text-start w-100 ${currentView === 'assignments' ? 'active fw-bold text-primary bg-primary-subtle' : 'text-body-secondary'}`}
+              >
+                Assignments
+              </button>
+            </li>
+
+            <li className="nav-item">
+              <button
+                onClick={() => handleNavClick('attendance')}
+                className={`nav-link border-0 bg-transparent py-1.5 px-2.5 rounded-pill text-start w-100 ${currentView === 'attendance' ? 'active fw-bold text-primary bg-primary-subtle' : 'text-body-secondary'}`}
+              >
+                Attendance
+              </button>
+            </li>
+
+            <li className="nav-item">
+              <button
+                onClick={() => handleNavClick('cgpa')}
+                className={`nav-link border-0 bg-transparent py-1.5 px-2.5 rounded-pill text-start w-100 ${currentView === 'cgpa' ? 'active fw-bold text-primary bg-primary-subtle' : 'text-body-secondary'}`}
+              >
+                CGPA
+              </button>
+            </li>
+
+            <li className="nav-item">
+              <button
+                onClick={() => handleNavClick('notes')}
+                className={`nav-link border-0 bg-transparent py-1.5 px-2.5 rounded-pill text-start w-100 ${currentView === 'notes' ? 'active fw-bold text-primary bg-primary-subtle' : 'text-body-secondary'}`}
+              >
+                Notes
+              </button>
+            </li>
+
+            <li className="nav-item">
+              <button
+                onClick={() => handleNavClick('about')}
+                className={`nav-link border-0 bg-transparent py-1.5 px-2.5 rounded-pill text-start w-100 ${currentView === 'about' ? 'active fw-bold text-primary bg-primary-subtle' : 'text-body-secondary'}`}
+              >
+                About
+              </button>
+            </li>
+
+            <li className="nav-item">
+              <button
+                onClick={() => handleNavClick('contact')}
+                className={`nav-link border-0 bg-transparent py-1.5 px-2.5 rounded-pill text-start w-100 ${currentView === 'contact' ? 'active fw-bold text-primary bg-primary-subtle' : 'text-body-secondary'}`}
+              >
+                Contact
               </button>
             </li>
           </ul>
 
-          {/* Mobile Auth Buttons inside collapse */}
           {!user && (
             <div className="d-flex d-sm-none flex-column gap-2 mt-3 pt-3 border-top border-subtle">
               <button
-                onClick={(e) => handleNavClick('login', e)}
+                onClick={() => handleNavClick('login')}
                 className="btn btn-outline-secondary rounded-pill w-100 py-2 fw-semibold"
               >
                 Log In
               </button>
               <button
-                onClick={(e) => handleNavClick('register', e)}
+                onClick={() => handleNavClick('register')}
                 className="btn btn-primary bg-gradient-accent border-0 rounded-pill w-100 py-2 fw-semibold shadow-sm"
               >
-                Get Started
+                Register
               </button>
             </div>
           )}

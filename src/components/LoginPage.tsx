@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { PageView, UserProfile } from '../types';
 import { initialUserProfile } from '../data/mockData';
-import { createRipple } from '../utils/ripple';
 
 interface LoginPageProps {
   onLoginSuccess: (user: UserProfile) => void;
@@ -41,11 +40,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
         ...initialUserProfile,
         email: email
       });
-    }, 800);
+    }, 400);
   };
 
-  const handleQuickDemoLogin = (e: React.MouseEvent<HTMLElement>) => {
-    createRipple(e);
+  const handleQuickDemoLogin = () => {
     setEmail('alex.morgan@university.edu');
     setPassword('Campus@2026!');
     setIsLoading(true);
@@ -53,7 +51,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
     setTimeout(() => {
       setIsLoading(false);
       onLoginSuccess(initialUserProfile);
-    }, 600);
+    }, 300);
   };
 
   const handleForgotSubmit = (e: React.FormEvent) => {
@@ -64,15 +62,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
         setForgotSubmitted(false);
         setShowForgotModal(false);
         setForgotEmail('');
-      }, 3000);
+      }, 2000);
     }
   };
 
   return (
     <div className="container max-w-7xl py-5 position-relative d-flex align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
       <div className="w-100 max-w-md mx-auto">
-        
-        {/* Navigation Breadcrumb back */}
         <div className="mb-3 text-center text-sm-start">
           <button
             onClick={() => onNavigate('landing')}
@@ -83,37 +79,32 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
           </button>
         </div>
 
-        {/* Glass Card Container */}
-        <div className="glass-card p-4 p-sm-5 rounded-4 shadow-lg border position-relative overflow-hidden">
-          
-          {/* Card Header */}
+        <div className="glass-card p-4 p-sm-5 rounded-4 shadow-lg border">
           <div className="text-center mb-4">
-            <div className="d-inline-flex align-items-center justify-content-center rounded-4 bg-gradient-accent text-white p-3 mb-3 shadow-sm floating-element" style={{ width: '56px', height: '56px' }}>
+            <div className="d-inline-flex align-items-center justify-content-center rounded-4 bg-gradient-accent text-white p-3 mb-3 shadow-sm" style={{ width: '56px', height: '56px' }}>
               <i className="bi bi-shield-lock-fill fs-3"></i>
             </div>
             <h2 className="fw-extrabold text-body tracking-tight mb-1 fs-3">Welcome Back</h2>
-            <p className="text-secondary small mb-0">Access your Campus Companion portal account</p>
+            <p className="text-secondary small mb-0">Sign in to your Campus Companion student portal</p>
           </div>
 
-          {/* Quick Demo Fill Alert */}
           <div className="alert alert-primary bg-primary-subtle border-primary-subtle rounded-3 p-2.5 mb-4 d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center gap-2 small">
               <i className="bi bi-person-fill-check text-primary fs-5"></i>
               <div>
-                <span className="fw-bold d-block text-body">Demo Mode Active</span>
-                <span className="text-muted xsmall" style={{ fontSize: '0.75rem' }}>One-click login for evaluator</span>
+                <span className="fw-bold d-block text-body">Demo Login</span>
+                <span className="text-muted xsmall" style={{ fontSize: '0.75rem' }}>One-click login for evaluation</span>
               </div>
             </div>
             <button
               onClick={handleQuickDemoLogin}
-              className="btn btn-primary btn-sm rounded-pill px-3 py-1 bg-gradient-accent border-0 fw-semibold btn-ripple shadow-sm"
+              className="btn btn-primary btn-sm rounded-pill px-3 py-1 bg-gradient-accent border-0 fw-semibold shadow-sm"
               disabled={isLoading}
             >
-              Demo Login
+              Demo Fill
             </button>
           </div>
 
-          {/* Error Message Alert */}
           {errorMessage && (
             <div className="alert alert-danger rounded-3 p-3 mb-4 small d-flex align-items-center gap-2">
               <i className="bi bi-exclamation-triangle-fill fs-5"></i>
@@ -121,9 +112,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
             </div>
           )}
 
-          {/* Login Form */}
           <form onSubmit={handleLoginSubmit}>
-            {/* Floating Label Email */}
             <div className="form-floating mb-3">
               <input
                 type="email"
@@ -135,11 +124,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
                 required
               />
               <label htmlFor="floatingEmail">
-                <i className="bi bi-envelope me-2"></i>University Email / Student ID
+                <i className="bi bi-envelope me-2"></i>University Email
               </label>
             </div>
 
-            {/* Floating Label Password with Eye Toggle */}
             <div className="form-floating mb-3 position-relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -157,15 +145,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="btn btn-link text-secondary position-absolute top-50 end-0 translate-middle-y me-2 p-1 text-decoration-none"
-                style={{ zIndex: 10 }}
+                className="btn btn-link text-secondary position-absolute top-50 end-0 translate-middle-y me-2 p-1 text-decoration-none z-3"
                 title={showPassword ? 'Hide Password' : 'Show Password'}
               >
                 <i className={`bi ${showPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'} fs-5`}></i>
               </button>
             </div>
 
-            {/* Remember Me & Forgot Password */}
             <div className="d-flex align-items-center justify-content-between mb-4 small">
               <div className="form-check">
                 <input
@@ -175,7 +161,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
-                <label className="form-check-input-label text-secondary" htmlFor="rememberCheck">
+                <label className="form-check-label text-secondary" htmlFor="rememberCheck">
                   Remember me
                 </label>
               </div>
@@ -189,103 +175,54 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
               </button>
             </div>
 
-            {/* Login Submit Button */}
             <button
               type="submit"
-              onClick={(e) => createRipple(e)}
               disabled={isLoading}
-              className="btn btn-primary btn-lg rounded-pill w-100 fw-bold bg-gradient-accent border-0 py-3 mb-4 btn-ripple shadow-md d-flex align-items-center justify-content-center gap-2"
+              className="btn btn-primary btn-lg rounded-pill w-100 fw-bold bg-gradient-accent border-0 py-3 mb-4 shadow-md d-flex align-items-center justify-content-center gap-2"
             >
               {isLoading ? (
                 <>
                   <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                  <span>Verifying Credentials...</span>
+                  <span>Authenticating...</span>
                 </>
               ) : (
                 <>
-                  <span>Sign In to Portal</span>
+                  <span>Sign In</span>
                   <i className="bi bi-box-arrow-in-right fs-5"></i>
                 </>
               )}
             </button>
           </form>
 
-          {/* Social Login UI Divider */}
-          <div className="position-relative text-center mb-4">
-            <hr className="border-subtle my-0" />
-            <span className="position-absolute top-50 start-50 translate-middle px-3 text-muted xsmall bg-body" style={{ fontSize: '0.75rem' }}>
-              OR CONTINUE WITH
-            </span>
-          </div>
-
-          {/* Social Buttons (UI Only) */}
-          <div className="row g-2 mb-4">
-            <div className="col-4">
-              <button
-                type="button"
-                onClick={(e) => createRipple(e)}
-                className="btn btn-outline-secondary w-100 rounded-3 py-2 btn-ripple glass-card border-subtle d-flex align-items-center justify-content-center gap-1 text-body"
-                title="Sign in with Google"
-              >
-                <i className="bi bi-google text-danger"></i>
-                <span className="d-none d-sm-inline xsmall fw-semibold ms-1">Google</span>
-              </button>
-            </div>
-            <div className="col-4">
-              <button
-                type="button"
-                onClick={(e) => createRipple(e)}
-                className="btn btn-outline-secondary w-100 rounded-3 py-2 btn-ripple glass-card border-subtle d-flex align-items-center justify-content-center gap-1 text-body"
-                title="Sign in with Apple"
-              >
-                <i className="bi bi-apple text-body"></i>
-                <span className="d-none d-sm-inline xsmall fw-semibold ms-1">Apple</span>
-              </button>
-            </div>
-            <div className="col-4">
-              <button
-                type="button"
-                onClick={(e) => createRipple(e)}
-                className="btn btn-outline-secondary w-100 rounded-3 py-2 btn-ripple glass-card border-subtle d-flex align-items-center justify-content-center gap-1 text-body"
-                title="Sign in with Microsoft"
-              >
-                <i className="bi bi-microsoft text-primary"></i>
-                <span className="d-none d-sm-inline xsmall fw-semibold ms-1">Office</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Register Link */}
           <div className="text-center text-secondary small">
             <span>Don't have an account yet? </span>
             <button
               onClick={() => onNavigate('register')}
               className="btn btn-link text-primary p-0 text-decoration-none fw-bold ms-1"
             >
-              Register Account
+              Register Here
             </button>
           </div>
         </div>
       </div>
 
-      {/* Forgot Password Modal */}
       {showForgotModal && (
-        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(8px)' }}>
+        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
           <div className="modal-dialog modal-dialog-centered max-w-md">
             <div className="modal-content glass-modal border-0 p-4">
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold text-body">Reset Portal Password</h5>
+                <h5 className="modal-title fw-bold text-body">Reset Password</h5>
                 <button type="button" className="btn-close" onClick={() => setShowForgotModal(false)}></button>
               </div>
               <div className="modal-body py-3">
                 <p className="text-secondary small mb-3">
-                  Enter your university email address below. We will send you a secure password reset link.
+                  Enter your university email address below to receive password reset instructions.
                 </p>
 
                 {forgotSubmitted ? (
                   <div className="alert alert-success rounded-3 p-3 small d-flex align-items-center gap-2 mb-0">
                     <i className="bi bi-check-circle-fill fs-4"></i>
-                    <span>Password reset instructions sent to {forgotEmail}!</span>
+                    <span>Reset instructions sent to {forgotEmail}!</span>
                   </div>
                 ) : (
                   <form onSubmit={handleForgotSubmit}>
@@ -307,7 +244,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
                         Cancel
                       </button>
                       <button type="submit" className="btn btn-primary rounded-pill bg-gradient-accent border-0 px-4 fw-semibold">
-                        Send Reset Link
+                        Send Link
                       </button>
                     </div>
                   </form>

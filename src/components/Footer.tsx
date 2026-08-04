@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { PageView } from '../types';
-import { createRipple } from '../utils/ripple';
 
 interface FooterProps {
   onNavigate: (view: PageView) => void;
@@ -32,51 +31,45 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <span className="fw-extrabold fs-5 tracking-tight text-body">Campus Companion</span>
             </div>
             <p className="text-secondary small mb-3 max-w-sm">
-              The premier student portal engineered for university excellence. Experience glassmorphic design, instant schedule tracking, and academic organization.
+              The clean, responsive student portal designed for university course management, class routine scheduling, and academic calculators.
             </p>
             <div className="d-flex gap-2">
-              <a href="#" className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0 text-body" style={{ width: '36px', height: '36px' }} aria-label="Twitter">
-                <i className="bi bi-twitter-x"></i>
-              </a>
-              <a href="#" className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0 text-body" style={{ width: '36px', height: '36px' }} aria-label="GitHub">
-                <i className="bi bi-github"></i>
-              </a>
-              <a href="#" className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0 text-body" style={{ width: '36px', height: '36px' }} aria-label="LinkedIn">
-                <i className="bi bi-linkedin"></i>
-              </a>
-              <a href="#" className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0 text-body" style={{ width: '36px', height: '36px' }} aria-label="Instagram">
-                <i className="bi bi-instagram"></i>
-              </a>
+              <button onClick={() => onNavigate('contact')} className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0 text-body" style={{ width: '36px', height: '36px' }} title="Contact Support">
+                <i className="bi bi-envelope"></i>
+              </button>
+              <button onClick={() => onNavigate('about')} className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0 text-body" style={{ width: '36px', height: '36px' }} title="About Project">
+                <i className="bi bi-info-circle"></i>
+              </button>
             </div>
           </div>
 
           {/* Nav Links */}
           <div className="col-lg-2 col-md-6 col-6">
-            <h6 className="fw-bold text-body mb-3 small text-uppercase tracking-wider">Quick Navigation</h6>
+            <h6 className="fw-bold text-body mb-3 small text-uppercase tracking-wider">Navigation</h6>
             <ul className="list-unstyled d-flex flex-column gap-2 small">
               <li><button onClick={() => onNavigate('landing')} className="btn btn-link p-0 text-decoration-none text-secondary">Home</button></li>
-              <li><a href="#features" className="text-decoration-none text-secondary">Features</a></li>
-              <li><a href="#stats" className="text-decoration-none text-secondary">Statistics</a></li>
-              <li><a href="#testimonials" className="text-decoration-none text-secondary">Testimonials</a></li>
-              <li><button onClick={() => onNavigate('dashboard')} className="btn btn-link p-0 text-decoration-none text-primary fw-semibold">Student Portal</button></li>
+              <li><button onClick={() => onNavigate('dashboard')} className="btn btn-link p-0 text-decoration-none text-secondary">Dashboard</button></li>
+              <li><button onClick={() => onNavigate('routine')} className="btn btn-link p-0 text-decoration-none text-secondary">Routine</button></li>
+              <li><button onClick={() => onNavigate('assignments')} className="btn btn-link p-0 text-decoration-none text-secondary">Assignments</button></li>
+              <li><button onClick={() => onNavigate('about')} className="btn btn-link p-0 text-decoration-none text-secondary">About</button></li>
             </ul>
           </div>
 
-          {/* Student Services */}
+          {/* Student Utilities */}
           <div className="col-lg-2 col-md-6 col-6">
-            <h6 className="fw-bold text-body mb-3 small text-uppercase tracking-wider">Student Resources</h6>
-            <ul className="list-unstyled d-flex flex-column gap-2 small text-secondary">
-              <li>Course Directory</li>
-              <li>Academic Calendar</li>
-              <li>Library Commons</li>
-              <li>Financial Aid Office</li>
-              <li>IT Support Services</li>
+            <h6 className="fw-bold text-body mb-3 small text-uppercase tracking-wider">Calculators & Tools</h6>
+            <ul className="list-unstyled d-flex flex-column gap-2 small">
+              <li><button onClick={() => onNavigate('attendance')} className="btn btn-link p-0 text-decoration-none text-secondary">Attendance Calculator</button></li>
+              <li><button onClick={() => onNavigate('cgpa')} className="btn btn-link p-0 text-decoration-none text-secondary">CGPA Calculator</button></li>
+              <li><button onClick={() => onNavigate('notes')} className="btn btn-link p-0 text-decoration-none text-secondary">Notes Manager</button></li>
+              <li><button onClick={() => onNavigate('profile')} className="btn btn-link p-0 text-decoration-none text-secondary">Student Profile</button></li>
+              <li><button onClick={() => onNavigate('contact')} className="btn btn-link p-0 text-decoration-none text-secondary">Helpdesk Contact</button></li>
             </ul>
           </div>
 
           {/* Newsletter Form */}
           <div className="col-lg-4 col-md-6">
-            <h6 className="fw-bold text-body mb-3 small text-uppercase tracking-wider">Campus News Bulletin</h6>
+            <h6 className="fw-bold text-body mb-3 small text-uppercase tracking-wider">Campus Bulletin</h6>
             <p className="text-secondary small mb-3">Subscribe to receive weekly campus announcements and academic deadlines directly.</p>
             
             {subscribed ? (
@@ -96,8 +89,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 />
                 <button 
                   type="submit" 
-                  onClick={(e) => createRipple(e)}
-                  className="btn btn-primary rounded-pill bg-gradient-accent border-0 fw-semibold px-3 py-2 btn-ripple flex-shrink-0"
+                  className="btn btn-primary rounded-pill bg-gradient-accent border-0 fw-semibold px-3 py-2 flex-shrink-0"
                 >
                   Join
                 </button>
@@ -110,11 +102,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         <div className="pt-4 border-top border-subtle d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 text-muted xsmall" style={{ fontSize: '0.8rem' }}>
           <div>© {new Date().getFullYear()} Campus Companion. University Web Programming Final Project.</div>
           <div className="d-flex gap-3">
-            <span>Privacy Policy</span>
+            <span>Responsive Bootstrap 5 UI</span>
             <span>•</span>
-            <span>Terms of Service</span>
-            <span>•</span>
-            <span>Accessibility</span>
+            <span>Frontend Web Project</span>
           </div>
         </div>
       </div>

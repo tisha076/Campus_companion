@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PageView, UserProfile } from './types';
 import { initialUserProfile } from './data/mockData';
-import { LoadingScreen } from './components/LoadingScreen';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { FeaturesSection } from './components/FeaturesSection';
@@ -11,11 +10,18 @@ import { Footer } from './components/Footer';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
 import { DashboardPage } from './components/DashboardPage';
+import { RoutinePage } from './components/RoutinePage';
+import { AssignmentsPage } from './components/AssignmentsPage';
+import { AttendancePage } from './components/AttendancePage';
+import { CgpaPage } from './components/CgpaPage';
+import { NotesPage } from './components/NotesPage';
+import { ProfilePage } from './components/ProfilePage';
+import { AboutPage } from './components/AboutPage';
+import { ContactPage } from './components/ContactPage';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<PageView>('landing');
   const [user, setUser] = useState<UserProfile | null>(initialUserProfile);
-  const [isLoading, setIsLoading] = useState(true);
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
@@ -51,10 +57,7 @@ export default function App() {
 
   return (
     <div className="min-vh-100 d-flex flex-column position-relative">
-      {/* Initial Loading Screen */}
-      {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
-
-      {/* Sticky Glass Navbar */}
+      {/* Sticky Navbar */}
       <Navbar
         currentView={currentView}
         setCurrentView={setCurrentView}
@@ -64,12 +67,12 @@ export default function App() {
         onLogout={handleLogout}
       />
 
-      {/* Main Page Content */}
+      {/* Main Content Area */}
       <main className="flex-grow-1">
-        {currentView === 'landing' && (
+        {(currentView === 'landing' || currentView === 'home') && (
           <>
             <HeroSection onNavigate={setCurrentView} />
-            <FeaturesSection />
+            <FeaturesSection onNavigate={setCurrentView} />
             <StatsSection />
             <TestimonialsSection />
           </>
@@ -91,7 +94,7 @@ export default function App() {
 
         {currentView === 'dashboard' && (
           user ? (
-            <DashboardPage user={user} />
+            <DashboardPage user={user} onNavigate={setCurrentView} />
           ) : (
             <LoginPage
               onLoginSuccess={handleLoginSuccess}
@@ -99,6 +102,28 @@ export default function App() {
             />
           )
         )}
+
+        {currentView === 'routine' && <RoutinePage />}
+
+        {currentView === 'assignments' && <AssignmentsPage />}
+
+        {currentView === 'attendance' && <AttendancePage />}
+
+        {currentView === 'cgpa' && <CgpaPage />}
+
+        {currentView === 'notes' && <NotesPage />}
+
+        {currentView === 'profile' && (
+          user ? (
+            <ProfilePage user={user} onUpdateUser={(updated) => setUser(updated)} />
+          ) : (
+            <LoginPage onLoginSuccess={handleLoginSuccess} onNavigate={setCurrentView} />
+          )
+        )}
+
+        {currentView === 'about' && <AboutPage />}
+
+        {currentView === 'contact' && <ContactPage />}
       </main>
 
       {/* Footer */}

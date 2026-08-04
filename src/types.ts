@@ -1,4 +1,34 @@
-export type PageView = 'landing' | 'login' | 'register' | 'dashboard';
+export type PageView = 
+  | 'landing' 
+  | 'home'
+  | 'login' 
+  | 'register' 
+  | 'dashboard'
+  | 'routine'
+  | 'assignments'
+  | 'attendance'
+  | 'cgpa'
+  | 'notes'
+  | 'profile'
+  | 'about'
+  | 'contact';
+
+export interface NoteItem {
+  id: string;
+  title: string;
+  courseCode: string;
+  content: string;
+  date: string;
+  category: 'Lecture Note' | 'Exam Prep' | 'Project' | 'General';
+}
+
+export interface AttendanceRecord {
+  id: string;
+  courseCode: string;
+  courseTitle: string;
+  totalClasses: number;
+  attendedClasses: number;
+}
 
 export interface UserProfile {
   name: string;
@@ -69,7 +99,9 @@ export interface Feature {
   icon: string;
   title: string;
   description: string;
+  targetView: PageView;
   badge?: string;
+  buttonText?: string;
 }
 
 export interface StatItem {

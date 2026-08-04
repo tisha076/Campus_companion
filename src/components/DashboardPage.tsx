@@ -1,29 +1,20 @@
 import React, { useState } from 'react';
-import { UserProfile, Course, ScheduleItem, Assignment, Announcement } from '../types';
+import { UserProfile, Course, ScheduleItem, Assignment, Announcement, PageView } from '../types';
 import { mockCourses, mockSchedule, mockAssignments, mockAnnouncements } from '../data/mockData';
-import { createRipple } from '../utils/ripple';
-import { GpaSimulatorWidget } from './GpaSimulatorWidget';
-import { FocusTimerWidget } from './FocusTimerWidget';
 
 interface DashboardPageProps {
   user: UserProfile;
+  onNavigate?: (view: PageView) => void;
 }
 
-export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
+export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onNavigate }) => {
   const [courses] = useState<Course[]>(mockCourses);
   const [schedule] = useState<ScheduleItem[]>(mockSchedule);
   const [assignments, setAssignments] = useState<Assignment[]>(mockAssignments);
   const [announcements] = useState<Announcement[]>(mockAnnouncements);
   
   const [selectedDay, setSelectedDay] = useState<'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri'>('Mon');
-  const [assignmentFilter, setAssignmentFilter] = useState<'All' | 'Pending' | 'In Progress' | 'Completed'>('All');
   const [showStudentPass, setShowStudentPass] = useState(false);
-
-  // Filter assignments
-  const filteredAssignments = assignments.filter((a) => {
-    if (assignmentFilter === 'All') return true;
-    return a.status === assignmentFilter;
-  });
 
   // Toggle assignment status
   const handleToggleAssignmentStatus = (id: string) => {
@@ -43,13 +34,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
 
   return (
     <div className="container max-w-7xl py-4 py-lg-5">
-      
       {/* Top Welcome Banner */}
       <div className="glass-card p-4 p-md-5 rounded-4 border mb-4 position-relative overflow-hidden">
-        <div className="position-absolute top-0 end-0 p-3 opacity-10 d-none d-md-block">
-          <i className="bi bi-mortarboard-fill display-1 text-primary"></i>
-        </div>
-
         <div className="row align-items-center gy-3">
           <div className="col-md-8">
             <div className="d-flex align-items-center gap-2 mb-2">
@@ -72,8 +58,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
 
           <div className="col-md-4 text-md-end">
             <button
-              onClick={(e) => { createRipple(e); setShowStudentPass(true); }}
-              className="btn btn-primary rounded-pill px-4 py-2.5 bg-gradient-accent border-0 fw-bold btn-ripple shadow-sm d-inline-flex align-items-center gap-2"
+              onClick={() => setShowStudentPass(true)}
+              className="btn btn-primary rounded-pill px-4 py-2.5 bg-gradient-accent border-0 fw-bold shadow-sm d-inline-flex align-items-center gap-2"
             >
               <i className="bi bi-qr-code-scan fs-5"></i>
               <span>Digital Student Pass</span>
@@ -92,7 +78,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
             <div>
               <div className="text-muted xsmall fw-semibold text-uppercase" style={{ fontSize: '0.72rem' }}>Cumulative GPA</div>
               <div className="fs-3 fw-extrabold text-body">{user.gpa.toFixed(2)}</div>
-              <div className="text-success xsmall fw-medium" style={{ fontSize: '0.7rem' }}>Top 5% of Faculty</div>
+              <div className="text-success xsmall fw-medium" style={{ fontSize: '0.7rem' }}>Faculty Honor Standing</div>
             </div>
           </div>
         </div>
@@ -105,7 +91,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
             <div>
               <div className="text-muted xsmall fw-semibold text-uppercase" style={{ fontSize: '0.72rem' }}>Active Courses</div>
               <div className="fs-3 fw-extrabold text-body">{courses.length}</div>
-              <div className="text-muted xsmall" style={{ fontSize: '0.7rem' }}>14 Total Credits</div>
+              <div className="text-muted xsmall" style={{ fontSize: '0.7rem' }}>14 Enrolled Credits</div>
             </div>
           </div>
         </div>
@@ -133,39 +119,98 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
             <div>
               <div className="text-muted xsmall fw-semibold text-uppercase" style={{ fontSize: '0.72rem' }}>Attendance Rate</div>
               <div className="fs-3 fw-extrabold text-body">96%</div>
-              <div className="text-success xsmall fw-medium" style={{ fontSize: '0.7rem' }}>Excellent standing</div>
+              <div className="text-success xsmall fw-medium" style={{ fontSize: '0.7rem' }}>Exam Eligible</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* What-If GPA Simulator Widget */}
-      <GpaSimulatorWidget user={user} />
+      {/* Quick Navigation Portal Shortcuts */}
+      <div className="glass-card p-4 rounded-4 border mb-4">
+        <h2 className="h6 fw-extrabold text-body mb-3">Portal Quick Utilities</h2>
+        <div className="row g-2">
+          <div className="col-6 col-md-4 col-lg-2">
+            <button
+              onClick={() => onNavigate && onNavigate('routine')}
+              className="btn btn-outline-secondary w-100 p-2.5 rounded-3 text-start d-flex flex-column gap-1 glass-card border-subtle"
+            >
+              <i className="bi bi-calendar-week text-primary fs-4"></i>
+              <span className="fw-bold xsmall text-body">Class Routine</span>
+            </button>
+          </div>
 
-      {/* Focus Timer Pomodoro Widget */}
-      <FocusTimerWidget />
+          <div className="col-6 col-md-4 col-lg-2">
+            <button
+              onClick={() => onNavigate && onNavigate('assignments')}
+              className="btn btn-outline-secondary w-100 p-2.5 rounded-3 text-start d-flex flex-column gap-1 glass-card border-subtle"
+            >
+              <i className="bi bi-check2-square text-warning fs-4"></i>
+              <span className="fw-bold xsmall text-body">Assignments</span>
+            </button>
+          </div>
 
-      {/* Main Content Layout: Left Schedule & Courses, Right Assignments & News */}
+          <div className="col-6 col-md-4 col-lg-2">
+            <button
+              onClick={() => onNavigate && onNavigate('attendance')}
+              className="btn btn-outline-secondary w-100 p-2.5 rounded-3 text-start d-flex flex-column gap-1 glass-card border-subtle"
+            >
+              <i className="bi bi-percent text-success fs-4"></i>
+              <span className="fw-bold xsmall text-body">Attendance Calc</span>
+            </button>
+          </div>
+
+          <div className="col-6 col-md-4 col-lg-2">
+            <button
+              onClick={() => onNavigate && onNavigate('cgpa')}
+              className="btn btn-outline-secondary w-100 p-2.5 rounded-3 text-start d-flex flex-column gap-1 glass-card border-subtle"
+            >
+              <i className="bi bi-calculator text-info fs-4"></i>
+              <span className="fw-bold xsmall text-body">CGPA Calc</span>
+            </button>
+          </div>
+
+          <div className="col-6 col-md-4 col-lg-2">
+            <button
+              onClick={() => onNavigate && onNavigate('notes')}
+              className="btn btn-outline-secondary w-100 p-2.5 rounded-3 text-start d-flex flex-column gap-1 glass-card border-subtle"
+            >
+              <i className="bi bi-journal-text text-danger fs-4"></i>
+              <span className="fw-bold xsmall text-body">Study Notes</span>
+            </button>
+          </div>
+
+          <div className="col-6 col-md-4 col-lg-2">
+            <button
+              onClick={() => onNavigate && onNavigate('profile')}
+              className="btn btn-outline-secondary w-100 p-2.5 rounded-3 text-start d-flex flex-column gap-1 glass-card border-subtle"
+            >
+              <i className="bi bi-person-badge text-primary fs-4"></i>
+              <span className="fw-bold xsmall text-body">Student Profile</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Layout */}
       <div className="row g-4">
-        
         {/* Left Column */}
         <div className="col-lg-7">
-          
           {/* Interactive Class Schedule */}
-          <div className="glass-card p-4 rounded-4 mb-4">
+          <div className="glass-card p-4 rounded-4 mb-4 border">
             <div className="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between mb-3 gap-2">
               <div>
-                <h2 className="h5 fw-extrabold text-body mb-0">Class Schedule & Timetable</h2>
-                <span className="text-muted xsmall">Weekly interactive lecture agenda</span>
+                <h2 className="h5 fw-extrabold text-body mb-0">Today's Class Schedule</h2>
+                <span className="text-muted xsmall">Daily timetable overview</span>
               </div>
 
-              {/* Day Selector Tabs */}
               <div className="btn-group btn-group-sm rounded-pill p-1 bg-body-tertiary border border-subtle">
                 {(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const).map((day) => (
                   <button
                     key={day}
                     onClick={() => setSelectedDay(day)}
-                    className={`btn rounded-pill px-2.5 py-1 fw-bold text-uppercase ${selectedDay === day ? 'btn-primary bg-gradient-accent text-white shadow-sm' : 'btn-light border-0 text-secondary'}`}
+                    className={`btn rounded-pill px-2.5 py-1 fw-bold text-uppercase ${
+                      selectedDay === day ? 'btn-primary bg-gradient-accent text-white shadow-sm' : 'btn-light border-0 text-secondary'
+                    }`}
                     style={{ fontSize: '0.75rem' }}
                   >
                     {day}
@@ -199,16 +244,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
             ) : (
               <div className="p-4 text-center text-muted rounded-3 bg-body-tertiary border border-subtle small">
                 <i className="bi bi-calendar-check fs-2 text-primary d-block mb-1"></i>
-                No scheduled lectures or labs for {selectedDay}. Enjoy your study time!
+                No scheduled lectures for {selectedDay}.
               </div>
             )}
           </div>
 
-          {/* Enrolled Courses & Progress */}
-          <div className="glass-card p-4 rounded-4">
+          {/* Enrolled Courses */}
+          <div className="glass-card p-4 rounded-4 border">
             <div className="d-flex align-items-center justify-content-between mb-3">
               <div>
-                <h2 className="h5 fw-extrabold text-body mb-0">Enrolled Courses & Progress</h2>
+                <h2 className="h5 fw-extrabold text-body mb-0">Enrolled Courses</h2>
                 <span className="text-muted xsmall">Syllabus completion & current grade</span>
               </div>
               <span className="badge bg-primary rounded-pill px-3 py-1 fw-semibold">
@@ -236,7 +281,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
 
                     <div>
                       <div className="d-flex justify-content-between align-items-center mb-1 xsmall">
-                        <span className="text-muted">Syllabus Completed</span>
+                        <span className="text-muted">Syllabus Progress</span>
                         <span className="fw-bold text-body">{course.progress}%</span>
                       </div>
                       <div className="progress rounded-pill bg-body" style={{ height: '6px' }}>
@@ -253,169 +298,124 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
           </div>
         </div>
 
-        {/* Right Column */}
+        {/* Right Column: Assignments & Announcements */}
         <div className="col-lg-5">
-          
-          {/* Assignment Tracker */}
-          <div className="glass-card p-4 rounded-4 mb-4">
+          {/* Recent Tasks */}
+          <div className="glass-card p-4 rounded-4 border mb-4">
             <div className="d-flex align-items-center justify-content-between mb-3">
-              <div>
-                <h2 className="h5 fw-extrabold text-body mb-0">Assignment Tracker</h2>
-                <span className="text-muted xsmall">Interactive deadline management</span>
-              </div>
-
-              {/* Status Filter Dropdown */}
-              <select
-                className="form-select form-select-sm rounded-pill border-subtle bg-body-tertiary w-auto text-body fw-semibold"
-                value={assignmentFilter}
-                onChange={(e) => setAssignmentFilter(e.target.value as any)}
-                style={{ fontSize: '0.78rem' }}
+              <h2 className="h5 fw-extrabold text-body mb-0">Upcoming Assignments</h2>
+              <button
+                onClick={() => onNavigate && onNavigate('assignments')}
+                className="btn btn-link text-primary p-0 text-decoration-none xsmall fw-bold"
               >
-                <option value="All">All Status</option>
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-              </select>
+                View All
+              </button>
             </div>
 
-            {/* Assignments List */}
             <div className="d-flex flex-column gap-2.5">
-              {filteredAssignments.map((a) => (
-                <div key={a.id} className="p-3 rounded-3 bg-body-tertiary border border-subtle d-flex align-items-start justify-content-between gap-2">
-                  <div className="d-flex align-items-start gap-2.5">
-                    <button
-                      onClick={() => handleToggleAssignmentStatus(a.id)}
-                      className={`btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center border-0 flex-shrink-0 mt-0.5 ${a.status === 'Completed' ? 'bg-success text-white' : 'bg-secondary-subtle text-secondary'}`}
-                      style={{ width: '24px', height: '24px' }}
-                      title="Toggle completed state"
-                    >
-                      <i className={`bi ${a.status === 'Completed' ? 'bi-check-lg' : 'bi-circle'}`}></i>
-                    </button>
-
+              {assignments.slice(0, 3).map((assignment) => (
+                <div key={assignment.id} className="p-3 rounded-3 bg-body-tertiary border border-subtle d-flex align-items-center justify-content-between">
+                  <div className="d-flex align-items-center gap-2.5">
+                    <input
+                      type="checkbox"
+                      className="form-check-input cursor-pointer"
+                      checked={assignment.status === 'Completed'}
+                      onChange={() => handleToggleAssignmentStatus(assignment.id)}
+                    />
                     <div>
-                      <div className={`fw-bold small text-body ${a.status === 'Completed' ? 'text-decoration-line-through text-muted' : ''}`}>
-                        {a.title}
+                      <div className={`fw-bold small text-body ${assignment.status === 'Completed' ? 'text-decoration-line-through text-muted' : ''}`}>
+                        {assignment.title}
                       </div>
                       <div className="text-muted xsmall">
-                        {a.courseCode} • Due {a.dueDate} ({a.dueTime})
+                        {assignment.courseCode} • Due {assignment.dueDate}
                       </div>
                     </div>
                   </div>
 
-                  <span className={`badge rounded-pill px-2.5 py-1 text-uppercase fw-semibold ${
-                    a.status === 'Completed' ? 'bg-success-subtle text-success border border-success-subtle' :
-                    a.status === 'In Progress' ? 'bg-primary-subtle text-primary border border-primary-subtle' :
-                    'bg-warning-subtle text-warning border border-warning-subtle'
-                  }`} style={{ fontSize: '0.68rem' }}>
-                    {a.status}
+                  <span
+                    className={`badge rounded-pill px-2.5 py-1 xsmall fw-semibold ${
+                      assignment.priority === 'High'
+                        ? 'bg-danger-subtle text-danger border border-danger-subtle'
+                        : 'bg-warning-subtle text-warning border border-warning-subtle'
+                    }`}
+                  >
+                    {assignment.priority}
                   </span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Campus News & Announcements */}
-          <div className="glass-card p-4 rounded-4">
-            <div className="d-flex align-items-center justify-content-between mb-3">
-              <div>
-                <h2 className="h5 fw-extrabold text-body mb-0">Campus Bulletin</h2>
-                <span className="text-muted xsmall">Official university updates</span>
-              </div>
-              <i className="bi bi-bell-fill text-primary fs-5"></i>
-            </div>
-
+          {/* Official Announcements */}
+          <div className="glass-card p-4 rounded-4 border">
+            <h2 className="h5 fw-extrabold text-body mb-3">Campus Announcements</h2>
             <div className="d-flex flex-column gap-3">
-              {announcements.map((an) => (
-                <div key={an.id} className="p-3 rounded-3 bg-body-tertiary border border-subtle">
+              {announcements.map((ann) => (
+                <div key={ann.id} className="p-3 rounded-3 bg-body-tertiary border border-subtle">
                   <div className="d-flex align-items-center justify-content-between mb-1">
-                    <span className="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-0.5 fw-semibold" style={{ fontSize: '0.68rem' }}>
-                      {an.category}
+                    <span className="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-0.5 xsmall fw-bold">
+                      {ann.category}
                     </span>
-                    <span className="text-muted xsmall" style={{ fontSize: '0.72rem' }}>{an.date}</span>
+                    <span className="text-muted xsmall">{ann.date}</span>
                   </div>
-
-                  <h3 className="fw-bold text-body mb-1 fs-6">{an.title}</h3>
-                  <p className="text-secondary xsmall mb-2 lh-relaxed" style={{ fontSize: '0.8rem' }}>{an.summary}</p>
-                  
-                  <div className="text-muted xsmall fw-medium" style={{ fontSize: '0.72rem' }}>
-                    Posted by: {an.author}
-                  </div>
+                  <h3 className="fw-bold text-body fs-6 mb-1">{ann.title}</h3>
+                  <p className="text-secondary xsmall mb-2">{ann.summary}</p>
+                  <div className="text-muted xsmall fw-semibold">{ann.author}</div>
                 </div>
               ))}
             </div>
           </div>
-
         </div>
       </div>
 
       {/* Digital Student Pass Modal */}
       {showStudentPass && (
-        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(12px)' }}>
+        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
           <div className="modal-dialog modal-dialog-centered max-w-sm">
-            <div className="modal-content glass-modal border-0 p-4 position-relative overflow-hidden text-center">
-              
-              <button
-                type="button"
-                className="btn-close position-absolute top-0 end-0 m-3"
-                onClick={() => setShowStudentPass(false)}
-              ></button>
-
-              <div className="py-2">
-                <div className="d-flex align-items-center justify-content-center gap-2 mb-3">
-                  <div className="d-flex align-items-center justify-content-center rounded-3 bg-gradient-accent text-white p-2 shadow-sm" style={{ width: '32px', height: '32px' }}>
-                    <i className="bi bi-mortarboard-fill fs-6"></i>
-                  </div>
-                  <span className="fw-extrabold text-body small tracking-tight">CAMPUS COMPANION PASS</span>
-                </div>
-
-                {/* Avatar */}
-                <img
-                  src={user.avatarUrl}
-                  alt={user.name}
-                  className="rounded-circle shadow-md mb-3 border border-3 border-primary"
-                  style={{ width: '80px', height: '80px', objectFit: 'cover' }}
-                />
-
-                <h4 className="fw-extrabold text-body mb-0">{user.name}</h4>
-                <div className="text-primary fw-bold small mb-2">{user.studentId}</div>
-                
-                <div className="p-3 rounded-3 bg-body-tertiary border border-subtle mb-3 text-start xsmall">
-                  <div className="d-flex justify-content-between mb-1">
-                    <span className="text-muted">Faculty:</span>
-                    <span className="fw-semibold text-body">Engineering & Tech</span>
-                  </div>
-                  <div className="d-flex justify-content-between mb-1">
-                    <span className="text-muted">Major:</span>
-                    <span className="fw-semibold text-body">{user.major.split('&')[0]}</span>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <span className="text-muted">Validity:</span>
-                    <span className="fw-semibold text-success">Valid thru 2027</span>
-                  </div>
-                </div>
-
-                {/* Simulated Barcode */}
-                <div className="p-3 rounded-3 bg-white text-dark d-flex flex-column align-items-center justify-content-center border shadow-inner">
-                  <div className="d-flex gap-1 mb-1" style={{ height: '38px' }}>
-                    {[...Array(24)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="bg-dark h-100"
-                        style={{ width: i % 3 === 0 ? '4px' : '2px', opacity: i % 4 === 0 ? 0.4 : 1 }}
-                      ></div>
-                    ))}
-                  </div>
-                  <div className="font-monospace xsmall fw-bold text-muted" style={{ letterSpacing: '0.15em', fontSize: '0.68rem' }}>
-                    *{user.studentId}*
-                  </div>
-                </div>
+            <div className="modal-content glass-modal border-0 p-4 text-center">
+              <div className="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" className="btn-close" onClick={() => setShowStudentPass(false)}></button>
               </div>
 
+              <div className="modal-body py-2">
+                <div className="p-4 rounded-4 bg-gradient-accent text-white shadow-lg position-relative overflow-hidden mb-3">
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <span className="fw-extrabold small tracking-wider text-uppercase">CAMPUS PORTAL ID</span>
+                    <i className="bi bi-mortarboard-fill fs-4"></i>
+                  </div>
+
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="rounded-circle border border-2 border-white shadow-sm mb-2"
+                    style={{ width: '80px', height: '80px', objectFit: 'cover' }}
+                  />
+
+                  <h3 className="h5 fw-bold mb-0">{user.name}</h3>
+                  <p className="xsmall text-white-50 mb-2">{user.major}</p>
+
+                  <div className="badge bg-white text-dark font-monospace fw-bold px-3 py-1 mb-3">
+                    {user.studentId}
+                  </div>
+
+                  <div className="p-2 bg-white rounded-3 d-inline-block shadow-sm">
+                    {/* Simulated Clean QR Code */}
+                    <div className="d-flex flex-wrap align-items-center justify-content-center gap-1 p-1" style={{ width: '100px', height: '100px', background: '#000' }}>
+                      <div className="w-100 h-100 bg-white d-flex align-items-center justify-content-center text-dark font-monospace fw-bold xsmall">
+                        [QR PASS]
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <button onClick={() => setShowStudentPass(false)} className="btn btn-light rounded-pill w-100 text-secondary">
+                  Close Student ID
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };
