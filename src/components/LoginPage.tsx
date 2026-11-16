@@ -1,13 +1,18 @@
+
 import React, { useState } from 'react';
 import { PageView, UserProfile } from '../types';
 import { initialUserProfile } from '../data/mockData';
+import { loginUser } from '../services/api';
 
 interface LoginPageProps {
   onLoginSuccess: (user: UserProfile) => void;
   onNavigate: (view: PageView) => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({
+  onLoginSuccess,
+  onNavigate
+}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +23,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  // REAL BACKEND LOGIN
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -34,41 +40,48 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      onLoginSuccess({
+    try {
+      const data = await loginUser(email, password);
+
+      if (rememberMe) {
+        localStorage.setItem('token', data.token);
+      } else {
+        sessionStorage.setItem('token', data.token);
+      }
+
+      const loggedInUser: UserProfile = {
         ...initialUserProfile,
-        email: email
-      });
-    }, 400);
-  };
+        name: data.user.full_name,
+        email: data.user.email,
+        studentId: String(data.user.user_id),
+      };
 
-  const handleQuickDemoLogin = () => {
-    setEmail('alex.morgan@university.edu');
-    setPassword('Campus@2026!');
-    setIsLoading(true);
+      onLoginSuccess(loggedInUser);
 
-    setTimeout(() => {
+    } catch (error: any) {
+      setErrorMessage(
+        error.response?.data?.message || 'Login failed. Please try again.'
+      );
+    } finally {
       setIsLoading(false);
-      onLoginSuccess(initialUserProfile);
-    }, 300);
+    }
   };
 
   const handleForgotSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (forgotEmail) {
       setForgotSubmitted(true);
-      setTimeout(() => {
-        setForgotSubmitted(false);
-        setShowForgotModal(false);
-        setForgotEmail('');
-      }, 2000);
     }
   };
 
   return (
-    <div className="container max-w-7xl py-5 position-relative d-flex align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
+    <div
+      className="container max-w-7xl py-5 position-relative d-flex align-items-center justify-content-center"
+      style={{ minHeight: '80vh' }}
+    >
       <div className="w-100 max-w-md mx-auto">
+
         <div className="mb-3 text-center text-sm-start">
           <button
             onClick={() => onNavigate('landing')}
@@ -80,29 +93,22 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
         </div>
 
         <div className="glass-card p-4 p-sm-5 rounded-4 shadow-lg border">
+
           <div className="text-center mb-4">
-            <div className="d-inline-flex align-items-center justify-content-center rounded-4 bg-gradient-accent text-white p-3 mb-3 shadow-sm" style={{ width: '56px', height: '56px' }}>
+            <div
+              className="d-inline-flex align-items-center justify-content-center rounded-4 bg-gradient-accent text-white p-3 mb-3 shadow-sm"
+              style={{ width: '56px', height: '56px' }}
+            >
               <i className="bi bi-shield-lock-fill fs-3"></i>
             </div>
-            <h2 className="fw-extrabold text-body tracking-tight mb-1 fs-3">Welcome Back</h2>
-            <p className="text-secondary small mb-0">Sign in to your Campus Companion student portal</p>
-          </div>
 
-          <div className="alert alert-primary bg-primary-subtle border-primary-subtle rounded-3 p-2.5 mb-4 d-flex align-items-center justify-content-between">
-            <div className="d-flex align-items-center gap-2 small">
-              <i className="bi bi-person-fill-check text-primary fs-5"></i>
-              <div>
-                <span className="fw-bold d-block text-body">Demo Login</span>
-                <span className="text-muted xsmall" style={{ fontSize: '0.75rem' }}>One-click login for evaluation</span>
-              </div>
-            </div>
-            <button
-              onClick={handleQuickDemoLogin}
-              className="btn btn-primary btn-sm rounded-pill px-3 py-1 bg-gradient-accent border-0 fw-semibold shadow-sm"
-              disabled={isLoading}
-            >
-              Demo Fill
-            </button>
+            <h2 className="fw-extrabold text-body tracking-tight mb-1 fs-3">
+              Welcome Back
+            </h2>
+
+            <p className="text-secondary small mb-0">
+              Sign in to your Campus Companion student portal
+            </p>
           </div>
 
           {errorMessage && (
@@ -113,6 +119,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
           )}
 
           <form onSubmit={handleLoginSubmit}>
+
             <div className="form-floating mb-3">
               <input
                 type="email"
@@ -123,8 +130,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+
               <label htmlFor="floatingEmail">
-                <i className="bi bi-envelope me-2"></i>University Email
+                <i className="bi bi-envelope me-2"></i>
+                University Email
               </label>
             </div>
 
@@ -138,10 +147,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+
               <label htmlFor="floatingPassword">
-                <i className="bi bi-lock me-2"></i>Password
+                <i className="bi bi-lock me-2"></i>
+                Password
               </label>
-              
+
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -161,7 +172,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
-                <label className="form-check-label text-secondary" htmlFor="rememberCheck">
+
+                <label
+                  className="form-check-label text-secondary"
+                  htmlFor="rememberCheck"
+                >
                   Remember me
                 </label>
               </div>
@@ -182,7 +197,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
             >
               {isLoading ? (
                 <>
-                  <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <span className="spinner-border spinner-border-sm"></span>
                   <span>Authenticating...</span>
                 </>
               ) : (
@@ -192,10 +207,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
                 </>
               )}
             </button>
+
           </form>
 
           <div className="text-center text-secondary small">
             <span>Don't have an account yet? </span>
+
             <button
               onClick={() => onNavigate('register')}
               className="btn btn-link text-primary p-0 text-decoration-none fw-bold ms-1"
@@ -203,26 +220,39 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
               Register Here
             </button>
           </div>
+
         </div>
       </div>
 
       {showForgotModal && (
-        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+        <div
+          className="modal show d-block"
+          tabIndex={-1}
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+        >
           <div className="modal-dialog modal-dialog-centered max-w-md">
             <div className="modal-content glass-modal border-0 p-4">
+
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold text-body">Reset Password</h5>
-                <button type="button" className="btn-close" onClick={() => setShowForgotModal(false)}></button>
+                <h5 className="modal-title fw-bold text-body">
+                  Reset Password
+                </h5>
+
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowForgotModal(false)}
+                ></button>
               </div>
+
               <div className="modal-body py-3">
                 <p className="text-secondary small mb-3">
                   Enter your university email address below to receive password reset instructions.
                 </p>
 
                 {forgotSubmitted ? (
-                  <div className="alert alert-success rounded-3 p-3 small d-flex align-items-center gap-2 mb-0">
-                    <i className="bi bi-check-circle-fill fs-4"></i>
-                    <span>Reset instructions sent to {forgotEmail}!</span>
+                  <div className="alert alert-success rounded-3 p-3 small">
+                    Password reset functionality is not available yet.
                   </div>
                 ) : (
                   <form onSubmit={handleForgotSubmit}>
@@ -236,24 +266,38 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
                         onChange={(e) => setForgotEmail(e.target.value)}
                         required
                       />
-                      <label htmlFor="forgotEmail">University Email</label>
+
+                      <label htmlFor="forgotEmail">
+                        University Email
+                      </label>
                     </div>
 
                     <div className="d-flex justify-content-end gap-2 mt-4">
-                      <button type="button" className="btn btn-light rounded-pill px-4" onClick={() => setShowForgotModal(false)}>
+                      <button
+                        type="button"
+                        className="btn btn-light rounded-pill px-4"
+                        onClick={() => setShowForgotModal(false)}
+                      >
                         Cancel
                       </button>
-                      <button type="submit" className="btn btn-primary rounded-pill bg-gradient-accent border-0 px-4 fw-semibold">
+
+                      <button
+                        type="submit"
+                        className="btn btn-primary rounded-pill bg-gradient-accent border-0 px-4 fw-semibold"
+                      >
                         Send Link
                       </button>
                     </div>
                   </form>
                 )}
               </div>
+
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 };
+

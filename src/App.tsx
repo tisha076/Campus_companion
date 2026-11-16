@@ -8,7 +8,7 @@ import { StatsSection } from './components/StatsSection';
 import { TestimonialsSection } from './components/TestimonialsSection';
 import { Footer } from './components/Footer';
 import { LoginPage } from './components/LoginPage';
-import { RegisterPage } from './components/RegisterPage';
+import RegisterPage from './components/RegisterPage';
 import { DashboardPage } from './components/DashboardPage';
 import { RoutinePage } from './components/RoutinePage';
 import { AssignmentsPage } from './components/AssignmentsPage';
